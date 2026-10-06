@@ -837,12 +837,12 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
             <small>
               ${escapeHTML(
-                work.date || ''
+            work.achievement_date || ''
               )}
               ${
-                work.owner
+                work.submitter_name
                   ? ' · ' +
-                    escapeHTML(work.owner)
+                    escapeHTML(work.submitter_name)
                   : ''
               }
             </small>
@@ -950,14 +950,14 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             لأنه يربط المنجز بصاحب الحساب.
           */
 
-          let payload = {
-            title,
-            category,
-            date,
-            owner,
-            description,
-            created_by: state.user.id
-          };
+let payload = {
+  title,
+  category,
+  achievement_date: date,
+  submitter_name: owner,
+  description,
+  created_by: state.user.id
+};
 
           let result =
             await supabase
