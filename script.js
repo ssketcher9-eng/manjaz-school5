@@ -1,5 +1,4 @@
-const SUPABASE_URL = 'https://jwsvfrqjmklanrcwvyir.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_SJ4ZYyJa0oCnPygbUPTiHw_-MXnOANX';
+const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_SJ4ZYyJa0oCnPygbUPTiHw_-MXnOANX';
 
 (async function () {
   const { createClient } = await import(
