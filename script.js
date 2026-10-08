@@ -814,7 +814,12 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     } else {
       container.innerHTML =
         filtered.map(work => `
-          <article class="card">
+          <article
+  class="card"
+  data-work-id="${escapeHTML(work.id)}"
+  role="button"
+  tabindex="0"
+>
 
             <span class="tag">
               ${escapeHTML(
@@ -1075,7 +1080,173 @@ let payload = {
       await loadWorks();
     }
   );
+  /* =========================
+     تفاصيل المنجز
+  ========================= */
+  const workDetailsStyle = document.createElement('style');
 
+  workDetailsStyle.textContent = `
+    .manjaz-work-details-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99998;
+      padding: 20px;
+    }
+
+    .manjaz-work-details-modal[hidden] {
+      display: none;
+    }
+
+    .manjaz-work-details-card {
+      width: min(650px, 100%);
+      max-height: 85vh;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 18px;
+      padding: 25px;
+      direction: rtl;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+
+    .manjaz-work-details-close {
+      float: left;
+      border: 0;
+      background: none;
+      font-size: 25px;
+      cursor: pointer;
+    }
+
+    .manjaz-work-details-card h2 {
+      margin-top: 0;
+    }
+
+    .manjaz-work-details-card .details-tag {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: #eee;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .manjaz-work-details-card .details-description {
+      line-height: 1.9;
+      white-space: pre-wrap;
+    }
+
+    .manjaz-work-details-card .details-meta {
+      color: #666;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+  `;
+
+  document.head.appendChild(workDetailsStyle);
+
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `
+      <div
+        id="workDetailsModal"
+        class="manjaz-work-details-modal"
+        hidden
+      >
+        <div class="manjaz-work-details-card">
+
+          <button
+            id="workDetailsClose"
+            class="manjaz-work-details-close"
+            type="button"
+          >×</button>
+
+          <div id="workDetailsContent"></div>
+
+        </div>
+      </div>
+    `
+  );
+
+  function openWorkDetails(work) {
+    const content = $('#workDetailsContent');
+
+    if (!content) return;
+
+    content.innerHTML = `
+      <span class="details-tag">
+        ${escapeHTML(work.category || 'منجز')}
+      </span>
+
+      <h2>
+        ${escapeHTML(work.title || 'بدون عنوان')}
+      </h2>
+
+      <p class="details-description">
+        ${escapeHTML(work.description || 'لا يوجد وصف لهذا المنجز.')}
+      </p>
+
+      <div class="details-meta">
+        ${
+          work.achievement_date
+            ? `التاريخ: ${escapeHTML(work.achievement_date)}`
+            : ''
+        }
+
+        ${
+          work.submitter_name
+            ? `<br>المنفذ: ${escapeHTML(work.submitter_name)}`
+            : ''
+        }
+      </div>
+    `;
+
+    $('#workDetailsModal').hidden = false;
+  }
+
+  function closeWorkDetails() {
+    $('#workDetailsModal').hidden = true;
+  }
+
+  $('#workDetailsClose')?.addEventListener(
+    'click',
+    closeWorkDetails
+  );
+
+  $('#workDetailsModal')?.addEventListener(
+    'click',
+    e => {
+      if (e.target.id === 'workDetailsModal') {
+        closeWorkDetails();
+      }
+    }
+  );
+
+  $('#allWorks')?.addEventListener(
+    'click',
+    e => {
+      if (e.target.closest('[data-delete-id]')) {
+        return;
+      }
+
+      const card =
+        e.target.closest('[data-work-id]');
+
+      if (!card) return;
+
+      const work = state.works.find(
+        item =>
+          String(item.id) ===
+          String(card.dataset.workId)
+      );
+
+      if (!work) return;
+
+      openWorkDetails(work);
+    }
+  );
   /* =========================
      لوحة الإدارة
   ========================= */
