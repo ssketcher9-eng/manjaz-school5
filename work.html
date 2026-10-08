@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>تفاصيل المنجز | بوابة المنجزات</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .work-page {
+      min-height: 100vh;
+      padding: 50px 25px;
+      background: #f5f7f8;
+    }
+
+    .work-page-container {
+      width: min(850px, 100%);
+      margin: 0 auto;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 25px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 10px;
+      background: #0f6263;
+      color: white;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+      text-decoration: none;
+    }
+
+    .work-details-card {
+      background: white;
+      border-radius: 22px;
+      padding: 35px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+
+    .work-category {
+      display: inline-block;
+      padding: 7px 14px;
+      border-radius: 20px;
+      background: #edf6f5;
+      color: #0f6263;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .work-details-card h1 {
+      margin: 0 0 25px;
+      font-size: 32px;
+    }
+
+    .work-description {
+      line-height: 2;
+      font-size: 17px;
+      white-space: pre-wrap;
+      margin-bottom: 30px;
+    }
+
+    .work-meta {
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+      line-height: 2;
+      color: #666;
+    }
+
+    .work-loading,
+    .work-error {
+      text-align: center;
+      padding: 50px 20px;
+    }
+
+    .work-error {
+      color: #a33;
+    }
+
+    .work-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    .work-actions button {
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="work-page">
+
+    <div class="work-page-container">
+
+      <a href="index.html#works" class="back-button">
+        ← العودة إلى المنجزات
+      </a>
+
+      <section
+        id="workDetails"
+        class="work-details-card"
+      >
+        <div class="work-loading">
+          جاري تحميل المنجز...
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script type="module">
+
+    const SUPABASE_URL =
+      'https://jwsvfrqjmklanrcwviyr.supabase.co';
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      'sb_publishable_SJ4ZYyJa0oCnPygbUPTiHw_-MXnOANX';
+
+    const { createClient } =
+      await import(
+        'https://esm.sh/@supabase/supabase-js@2'
+      );
+
+    const supabase =
+      createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
+
+    const details =
+      document.querySelector('#workDetails');
+
+    const params =
+      new URLSearchParams(window.location.search);
+
+    const workId =
+      params.get('id');
+
+    function escapeHTML(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function loadWork() {
+
+      if (!workId) {
+        details.innerHTML = `
+          <div class="work-error">
+            لم يتم تحديد المنجز.
+          </div>
+        `;
+        return;
+      }
+
+      const { data, error } =
+        await supabase
+          .from('achievements')
+          .select('*')
+          .eq('id', workId)
+          .single();
+
+      if (error || !data) {
+        console.error(error);
+
+        details.innerHTML = `
+          <div class="work-error">
+            تعذر تحميل المنجز.
+          </div>
+        `;
+
+        return;
+      }
+
+      document.title =
+        `${data.title || 'تفاصيل المنجز'} | بوابة المنجزات`;
+
+      details.innerHTML = `
+
+        <span class="work-category">
+          ${escapeHTML(data.category || 'منجز')}
+        </span>
+
+        <h1>
+          ${escapeHTML(data.title || 'بدون عنوان')}
+        </h1>
+
+        <div class="work-description">
+          ${escapeHTML(
+            data.description ||
+            'لا يوجد وصف لهذا المنجز.'
+          )}
+        </div>
+
+        <div class="work-meta">
+
+          ${
+            data.achievement_date
+              ? `
+                <div>
+                  <strong>التاريخ:</strong>
+                  ${escapeHTML(data.achievement_date)}
+                </div>
+              `
+              : ''
+          }
+
+          ${
+            data.submitter_name
+              ? `
+                <div>
+                  <strong>المنفذ:</strong>
+                  ${escapeHTML(data.submitter_name)}
+                </div>
+              `
+              : ''
+          }
+
+        </div>
+
+      `;
+    }
+
+    loadWork();
+
+  </script>
+
+</body>
+</html>
