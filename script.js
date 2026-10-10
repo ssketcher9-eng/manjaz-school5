@@ -1053,15 +1053,15 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             error.message ||
             'تعذر حفظ المنجز أو رفع المرفقات.'
           );
-        } finally {
+         } finally {
           if (button) {
             button.disabled = false;
             button.textContent = 'حفظ المنجز';
           }
         }
+      }
     );
   }
-
   /* =========================
      حذف المنجز للمديرة
   ========================= */
