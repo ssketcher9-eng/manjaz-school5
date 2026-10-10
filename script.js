@@ -949,52 +949,92 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             'جارٍ الحفظ...';
         }
 
+       
         try {
-          /*
-            نرسل created_by أولًا،
-            لأنه يربط المنجز بصاحب الحساب.
-          */
+          const files = Array.from(
+            $('#attachments')?.files || []
+          );
 
-let payload = {
-  title,
-  category,
-  achievement_date: date,
-  submitter_name: owner,
-  description,
-  created_by: state.user.id
-};
+          const allowedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'application/pdf'
+          ];
 
-          let result =
+          for (const file of files) {
+            if (!allowedTypes.includes(file.type)) {
+              throw new Error(
+                `نوع الملف غير مسموح: ${file.name}`
+              );
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+              throw new Error(
+                `حجم الملف أكبر من 10 MB: ${file.name}`
+              );
+            }
+          }
+
+          if (button) {
+            button.textContent = 'جارٍ حفظ المنجز...';
+          }
+
+          const payload = {
+            title,
+            category,
+            achievement_date: date,
+            submitter_name: owner,
+            description,
+            created_by: state.user.id,
+            status: 'pending'
+          };
+
+          const { data: achievement, error: saveError } =
             await supabase
               .from('achievements')
               .insert(payload)
               .select()
               .single();
 
-          /*
-            إذا كانت قاعدة البيانات الحالية
-            لا تحتوي created_by، نحاول مرة ثانية
-            بالحقول الأساسية.
-          */
+          if (saveError) throw saveError;
 
-          if (
-            result.error &&
-            /created_by|column/i.test(
-              result.error.message || ''
-            )
-          ) {
-            delete payload.created_by;
+          for (const file of files) {
+            if (button) {
+              button.textContent =
+                `جارٍ رفع المرفقات (${files.indexOf(file) + 1}/${files.length})`;
+            }
 
-            result =
+            const safeName = file.name.replace(
+              /[^a-zA-Z0-9._-]/g,
+              '_'
+            );
+
+            const filePath =
+              `${state.user.id}/${achievement.id}/${crypto.randomUUID()}-${safeName}`;
+
+            const { error: uploadError } =
+              await supabase.storage
+                .from('achievement-files')
+                .upload(filePath, file, {
+                  contentType: file.type,
+                  upsert: false
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { error: metadataError } =
               await supabase
-                .from('achievements')
-                .insert(payload)
-                .select()
-                .single();
-          }
+                .from('achievement_attachments')
+                .insert({
+                  achievement_id: achievement.id,
+                  file_name: file.name,
+                  file_path: filePath,
+                  mime_type: file.type,
+                  uploaded_by: state.user.id
+                });
 
-          if (result.error) {
-            throw result.error;
+            if (metadataError) throw metadataError;
           }
 
           achievementForm.reset();
@@ -1004,23 +1044,21 @@ let payload = {
           goToPage('works');
 
           alert(
-            'تم حفظ المنجز بنجاح.'
+            'تم حفظ المنجز وإرفاق الملفات بنجاح. الحالة: قيد المراجعة.'
           );
         } catch (error) {
           console.error(error);
 
           alert(
             error.message ||
-            'تعذر حفظ المنجز.'
+            'تعذر حفظ المنجز أو رفع المرفقات.'
           );
         } finally {
           if (button) {
             button.disabled = false;
-            button.textContent =
-              'حفظ المنجز';
+            button.textContent = 'حفظ المنجز';
           }
         }
-      }
     );
   }
 
