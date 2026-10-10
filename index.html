@@ -33,7 +33,18 @@
   <div class="home-sections" id="homeSections"></div>
 </section>
 <section id="about" class="page"><h2>عن المدرسة</h2><div class="panel"><h3>الثانوية الخامسة بمكة المكرمة</h3><p>هذه المساحة مخصصة لنبذة المدرسة ورسالتها ورؤيتها.</p></div></section>
-<section id="add" class="page"><h2>إضافة منجز</h2><div class="panel"><form id="achievementForm"><div class="grid"><label>عنوان المنجز<input id="title" required></label><label>المجال<select id="category"><option>تعليمي</option><option>إداري</option><option>نشاط طلابي</option><option>تقني</option><option>شراكة</option></select></label><label>التاريخ<input id="date" type="date"></label><label>اسم المنفذ<input id="owner"></label></div><label>وصف المنجز<textarea id="description" rows="5"></textarea></label><button class="primary" type="submit">حفظ المنجز</button></form></div></section>
+  <section id="add" class="page"><h2>إضافة منجز</h2><div class="panel"><form id="achievementForm"><div class="grid"><label>عنوان المنجز<input id="title" required></label><label>المجال<select id="category"><option>تعليمي</option><option>إداري</option><option>نشاط طلابي</option><option>تقني</option><option>شراكة</option></select></label><label>التاريخ<input id="date" type="date"></label><label>اسم المنفذ<input id="owner"></label></div><label>وصف المنجز<textarea id="description" rows="5"></textarea></label>
+<label>
+  مرفقات المنجز (صور وشهادات PDF)
+  <input
+    id="attachments"
+    type="file"
+    accept="image/jpeg,image/png,image/webp,application/pdf"
+    multiple
+  >
+  <small>يمكن إرفاق عدة صور أو شهادات، بحد أقصى 10 MB لكل ملف.</small>
+</label>
+<button class="primary" type="submit">حفظ المنجز</button></form></div></section>
 <section id="works" class="page"><div class="section-head"><div><h2>استعراض المنجزات</h2><p>ابحثي وصنفي المنجزات المسجلة</p></div></div><div class="toolbar"><input id="search" placeholder="ابحث في المنجزات..."><select id="filter"><option value="all">كل المجالات</option><option>تعليمي</option><option>إداري</option><option>نشاط طلابي</option><option>تقني</option><option>شراكة</option></select></div><div id="allWorks" class="cards"></div></section>
 <section id="admin" class="page"><h2>لوحة الإدارة</h2><div class="stats"><div><strong id="totalCount">0</strong><span>إجمالي المنجزات</span></div><div><strong>18</strong><span>مكتملة</span></div><div><strong>6</strong><span>قيد المراجعة</span></div></div></section>
 <section id="reports" class="page"><h2>التقارير والإحصاءات</h2><div class="panel"><div class="bar"><i style="height:75%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:64%"></i><i style="height:42%"></i><i style="height:70%"></i></div></div></section>
