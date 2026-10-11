@@ -34,6 +34,16 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       .replace(/'/g, '&#039;');
   }
 
+  function statusLabel(status) {
+    const labels = { published: 'معتمد', approved: 'معتمد', pending: 'قيد المراجعة', under_review: 'قيد المراجعة', needs_edit: 'بحاجة إلى تعديل', rejected: 'غير معتمد' };
+    return labels[status] || status || 'قيد المراجعة';
+  }
+  function statusClass(status) {
+    if (status === 'published' || status === 'approved') return 'status-approved';
+    if (status === 'needs_edit' || status === 'rejected') return 'status-revision';
+    return 'status-pending';
+  }
+
   /* =========================
      الأقسام الرئيسية
   ========================= */
@@ -313,6 +323,12 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     }
   `;
 
+  authStyle.textContent += `
+    .status-badge{display:inline-block;margin:8px 5px;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:700}
+    .status-approved{background:#e2f5e9;color:#17663a}.status-pending{background:#fff2d8;color:#8a5a00}.status-revision{background:#fde7e7;color:#9d2525}
+    .admin-review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.admin-status-btn{border:0;border-radius:8px;padding:8px 11px;cursor:pointer;font-family:inherit}
+    .admin-status-btn.approve{background:#dff4e5;color:#17663a}.admin-status-btn.revise{background:#fff0d5;color:#875500}
+  `;
   document.head.appendChild(authStyle);
 
   document.body.insertAdjacentHTML(
@@ -826,6 +842,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
                 work.category || 'منجز'
               )}
             </span>
+            <span class="status-badge ${statusClass(work.status)}">${escapeHTML(statusLabel(work.status))}</span>
 
             <h3>
               ${escapeHTML(
@@ -1202,6 +1219,10 @@ $('#allWorks')?.addEventListener(
                       )}
                     </small>
 
+                    <div class="admin-review-actions">
+                      <button class="admin-status-btn approve" data-status-id="${escapeHTML(work.id)}" data-status-value="published" type="button">اعتماد</button>
+                      <button class="admin-status-btn revise" data-status-id="${escapeHTML(work.id)}" data-status-value="needs_edit" type="button">إعادة للتعديل</button>
+                    </div>
                     <br>
 
                     <button
@@ -1225,6 +1246,22 @@ $('#allWorks')?.addEventListener(
         }
       </div>
     `;
+
+    manager.querySelectorAll('[data-status-id]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const id = button.dataset.statusId;
+        const status = button.dataset.statusValue;
+        button.disabled = true;
+        const { error } = await supabase.from('achievements').update({ status }).eq('id', id);
+        if (error) {
+          console.error(error);
+          alert('تعذر تحديث الحالة. تأكدي من صلاحيات التعديل في Supabase.');
+          button.disabled = false;
+          return;
+        }
+        await loadWorks();
+      });
+    });
 
     manager
       .querySelectorAll(
