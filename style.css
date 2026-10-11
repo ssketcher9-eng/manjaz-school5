@@ -123,3 +123,11 @@
   }
 }
 
+
+
+/* Achievement image preview on outer cards */
+.card-image-wrap{width:calc(100% + 44px);height:190px;margin:-22px -22px 16px;overflow:hidden;border-radius:17px 17px 0 0;background:#edf3f4}
+.card-image{display:block;width:100%;height:100%;object-fit:cover}
+.card-labels{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card .status-badge{margin-top:0}
+@media(max-width:850px){.card-image-wrap{width:calc(100% + 32px);height:175px;margin:-16px -16px 14px}}
