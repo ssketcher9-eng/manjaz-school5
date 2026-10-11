@@ -780,6 +780,35 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
     state.works = result.data || [];
 
+    // اجلب صور المرفقات حتى لو لم يُملأ عمود image_url في سجل المنجز.
+    const workIds = state.works.map(work => work.id).filter(id => id != null);
+    if (workIds.length) {
+      const { data: attachmentRows, error: attachmentError } = await supabase
+        .from('achievement_attachments')
+        .select('achievement_id,file_path,mime_type,created_at')
+        .in('achievement_id', workIds)
+        .order('created_at', { ascending: true });
+
+      if (attachmentError) {
+        console.warn('تعذر تحميل صور أغلفة المنجزات:', attachmentError);
+      } else {
+        const coverByWork = new Map();
+        (attachmentRows || []).forEach(file => {
+          if (!file.mime_type || !file.mime_type.startsWith('image/')) return;
+          if (coverByWork.has(String(file.achievement_id))) return;
+          const { data: publicData } = supabase.storage
+            .from('achievement-files')
+            .getPublicUrl(file.file_path);
+          if (publicData?.publicUrl) coverByWork.set(String(file.achievement_id), publicData.publicUrl);
+        });
+
+        state.works = state.works.map(work => ({
+          ...work,
+          cover_image_url: work.image_url || coverByWork.get(String(work.id)) || ''
+        }));
+      }
+    }
+
     renderWorks();
     renderAdminPanel();
   }
@@ -836,9 +865,9 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   role="button"
   tabindex="0"
 >
-            ${work.image_url ? `
+            ${(work.cover_image_url || work.image_url) ? `
               <div class="card-image-wrap">
-                <img class="card-image" src="${escapeHTML(work.image_url)}" alt="${escapeHTML(work.title || 'صورة المنجز')}" loading="lazy" onerror="this.closest('.card-image-wrap')?.remove()">
+                <img class="card-image" src="${escapeHTML(work.cover_image_url || work.image_url)}" alt="${escapeHTML(work.title || 'صورة المنجز')}" loading="lazy" onerror="this.closest('.card-image-wrap')?.remove()">
               </div>
             ` : ''}
             <div class="card-labels">
