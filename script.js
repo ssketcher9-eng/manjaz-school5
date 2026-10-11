@@ -804,7 +804,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       state.works.filter(work => {
         const searchable =
           `${work.title || ''}
-           ${work.owner || ''}
+           ${work.submitter_name || work.submitter_name || work.owner || ''}
            ${work.description || ''}`
             .toLowerCase();
 
@@ -894,9 +894,20 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       $('#totalCount');
 
     if (totalCount) {
-      totalCount.textContent =
-        state.works.length;
+      totalCount.textContent = state.works.length;
     }
+
+    const publishedCount = $('#publishedCount');
+    const pendingCount = $('#pendingCount');
+    const approvedTotal = state.works.filter(work =>
+      ['published', 'approved'].includes(work.status)
+    ).length;
+    const pendingTotal = state.works.filter(work =>
+      ['pending', 'under_review'].includes(work.status)
+    ).length;
+
+    if (publishedCount) publishedCount.textContent = approvedTotal;
+    if (pendingCount) pendingCount.textContent = pendingTotal;
   }
 
   $('#search')?.addEventListener(
@@ -1215,7 +1226,7 @@ $('#allWorks')?.addEventListener(
 
                     <small>
                       ${escapeHTML(
-                        work.owner || ''
+                        work.submitter_name || work.owner || ''
                       )}
                     </small>
 
