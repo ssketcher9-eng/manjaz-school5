@@ -72,20 +72,25 @@
 
     .work-cover {
       width: 100%;
-      height: clamp(300px, 42vw, 480px);
+      min-width: 0;
+      height: auto;
+      min-height: 0;
       margin: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      background: #edf2f3;
+      background: transparent;
     }
 
     .work-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
       display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: min(65vh, 620px);
+      object-fit: contain;
+      background: transparent;
     }
 
     .work-cover-empty {
@@ -112,7 +117,8 @@
       .work-page { padding: 20px 12px; }
       .work-details-card { padding: 18px 18px 22px; border-radius: 16px; }
       .work-hero { grid-template-columns: 1fr; gap: 20px; }
-      .work-cover { height: 320px; }
+      .work-cover { height: auto; min-height: 0; }
+      .work-cover img { max-height: 52vh; }
       .work-details-card h1 { font-size: 25px; }
       .work-attachments .attachment-list { grid-template-columns: 1fr; }
     }
