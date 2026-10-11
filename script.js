@@ -1001,6 +1001,10 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
         const description =
           $('#description')?.value.trim();
+        const goal = $('#goal')?.value.trim() || '';
+        const impact = $('#impact')?.value.trim() || '';
+        const audience = $('#audience')?.value.trim() || '';
+        const entity = $('#entity')?.value.trim() || '';
 
         if (!title) {
           alert(
@@ -1063,6 +1067,10 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             achievement_date: date,
             submitter_name: owner,
             description,
+            goal,
+            impact,
+            audience,
+            entity,
             created_by: state.user.id,
             status: 'pending'
           };
