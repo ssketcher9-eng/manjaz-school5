@@ -836,13 +836,19 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   role="button"
   tabindex="0"
 >
-
+            ${work.image_url ? `
+              <div class="card-image-wrap">
+                <img class="card-image" src="${escapeHTML(work.image_url)}" alt="${escapeHTML(work.title || 'صورة المنجز')}" loading="lazy" onerror="this.closest('.card-image-wrap')?.remove()">
+              </div>
+            ` : ''}
+            <div class="card-labels">
             <span class="tag">
               ${escapeHTML(
                 work.category || 'منجز'
               )}
             </span>
             <span class="status-badge ${statusClass(work.status)}">${escapeHTML(statusLabel(work.status))}</span>
+            </div>
 
             <h3>
               ${escapeHTML(
