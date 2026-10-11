@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>منجز | الثانوية الخامسة بمكة المكرمة</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="workshops.css">
 </head>
 <body>
 <div class="topbar"><span>تم إطلاق خاصية إصدار الشهادات الرقمية للورش المنفذة عبر بوابة «منجز»</span><b>إصدار تجريبي</b></div>
@@ -21,6 +22,8 @@
     <a href="#awards"><i>◇</i><span>التكريمات والحوافز</span></a>
     <a href="#partners"><i>◎</i><span>الشراكات</span></a>
     <a href="#lessons"><i>▣</i><span>الدروس التطبيقية</span></a>
+    <a href="#workshops"><i>▧</i><span>الورش التدريبية</span></a>
+    <a href="#certificates"><i>▤</i><span>إصدار شهادات الورش</span></a>
     <a href="#settings"><i>⚙</i><span>الإعدادات</span></a>
   </nav>
   <div class="side-foot">الإصدار 1.0</div>
@@ -53,8 +56,11 @@
 <section id="awards" class="page"><h2>التكريمات والحوافز</h2><div class="empty">لا توجد بيانات مضافة حاليًا.</div></section>
 <section id="partners" class="page"><h2>الشراكات</h2><div class="empty">أضيفي الشراكات والجهات الداعمة هنا.</div></section>
 <section id="lessons" class="page"><h2>الدروس التطبيقية</h2><div class="empty">أضيفي الدروس التطبيقية والملفات المرتبطة بها هنا.</div></section>
+<section id="workshops" class="page"><div class="workshop-intro"><div><small>منجز · الثانوية الخامسة</small><h2>الورش التدريبية</h2><p>إضافة الورش المنفذة وإدارة بياناتها وإصدار شهادات المستفيدات.</p></div><button class="primary" id="newWorkshopBtn" type="button">＋ إضافة ورشة تدريبية</button></div><div class="panel workshop-form-panel" id="workshopFormPanel" hidden><h3 id="workshopFormTitle">إضافة ورشة تدريبية</h3><form id="workshopForm"><input id="workshopId" type="hidden"><div class="grid"><label>اسم الورشة<input id="workshopTitle" required maxlength="180"></label><label>تاريخ الورشة<input id="workshopDate" type="date" required></label><label>اسم المدربة<input id="workshopTrainer" required maxlength="180"></label><label>وقت الورشة<input id="workshopTime" type="time"></label><label>مدة الورشة<input id="workshopDuration" placeholder="مثال: ساعتان" required></label></div><label>وصف الورشة<textarea id="workshopDescription" rows="3"></textarea></label><div class="form-actions"><button class="primary" type="submit">حفظ الورشة</button><button class="secondary" id="cancelWorkshopBtn" type="button">إلغاء</button></div></form></div><div id="workshopNotice" class="notice" role="status"></div><div id="workshopCards" class="workshop-cards"><div class="empty">جارٍ تحميل الورش…</div></div></section>
+<section id="certificates" class="page"><div class="workshop-intro"><div><small>منجز · إصدار رقمي</small><h2>إصدار شهادات الورش التدريبية</h2><p>اختاري الورشة، ثم اكتبي اسم المستفيدة كما يجب أن يظهر في الشهادة.</p></div></div><div class="panel"><form id="certificateForm"><label>الورشة التدريبية<select id="certificateWorkshop" required><option value="">اختاري الورشة</option></select></label><label>اسم المستفيدة في الشهادة<input id="certificateRecipient" required maxlength="100" placeholder="الاسم الكامل"></label><div class="form-actions"><button class="primary" type="submit">معاينة وإصدار الشهادة</button></div></form></div><div id="certificatePreview" class="certificate-preview" hidden></div><div class="panel stamp-panel"><h3>ختم الإدارة</h3><p>الختم إلزامي في الشهادة النهائية، ويمكن للإدارة تغييره من هنا.</p><label>صورة ختم الإدارة<input id="adminStampInput" type="file" accept="image/png,image/jpeg,image/webp"></label><div id="stampPreview"></div><button id="saveStampBtn" class="secondary" type="button">حفظ الختم</button><small id="stampNotice"></small></div></section>
 <section id="settings" class="page"><h2>الإعدادات</h2><div class="panel"><label>اسم المدرسة<input value="الثانوية الخامسة بمكة المكرمة"></label><label>الشعار<input type="file" accept="image/*"></label></div></section>
 </main></div>
 <script src="script.js"></script>
+<script src="workshops.js"></script>
 </body>
 </html>
