@@ -374,6 +374,20 @@
           </div>
         </div>
 
+        <div class="work-extra-fields">
+          ${[
+            ['الهدف', data.goal],
+            ['الأثر / النتيجة', data.impact],
+            ['الفئة المستهدفة', data.audience],
+            ['الجهة المنفذة', data.entity]
+          ].filter(([, value]) => value && String(value).trim()).map(([label, value]) => `
+            <section class="work-section">
+              <h2>${escapeHTML(label)}</h2>
+              <p>${escapeHTML(value)}</p>
+            </section>
+          `).join('')}
+        </div>
+
         <section class="work-attachments work-section" aria-labelledby="attachmentsTitle">
           <h2 id="attachmentsTitle">الصور والمرفقات</h2>
           <div class="attachment-list">
