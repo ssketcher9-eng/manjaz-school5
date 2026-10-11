@@ -50,7 +50,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
   const sections = [
     ['أبرز المنجزات', '▤', '#works', '#add', 'إضافة'],
-    ['الورش التدريبية', '▧', '#lessons', '#add', 'إضافة'],
+    ['الورش التدريبية', '▧', '#works', '#add', 'إضافة', 'workshops'],
     ['الدروس التطبيقية', '▣', '#lessons', '#add', 'إضافة'],
     ['التكريمات والحوافز', '◇', '#awards', '#awards', 'عرض'],
     ['الشراكات', '◎', '#partners', '#partners', 'عرض'],
@@ -64,11 +64,33 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       <article class="section-card">
         <h2><span>${s[1]}</span>${s[0]}</h2>
         <div class="section-actions">
-          <a class="outline" href="${s[2]}">استعراض</a>
-          <a class="fill" href="${s[3]}">${s[4]}</a>
+          <a class="outline" href="${s[2]}" ${s[5] === 'workshops' ? 'data-workshop-view' : ''}>استعراض</a>
+          <a class="fill" href="${s[3]}" ${s[5] === 'workshops' ? 'data-workshop-add' : ''}>${s[4]}</a>
         </div>
       </article>
     `).join('');
+
+    homeSections.addEventListener('click', event => {
+      const addWorkshop = event.target.closest('[data-workshop-add]');
+      const viewWorkshops = event.target.closest('[data-workshop-view]');
+
+      if (addWorkshop) {
+        event.preventDefault();
+        const category = $('#category');
+        if (category) category.value = 'ورشة تدريبية';
+        goToPage('add');
+        const title = $('#add h2');
+        if (title) title.textContent = 'إضافة ورشة تدريبية';
+        const submit = $('#achievementForm button[type="submit"]');
+        if (submit) submit.textContent = 'حفظ الورشة';
+      } else if (viewWorkshops) {
+        event.preventDefault();
+        const filter = $('#filter');
+        if (filter) filter.value = 'ورشة تدريبية';
+        renderWorks();
+        goToPage('works');
+      }
+    });
   }
 
   /* =========================
