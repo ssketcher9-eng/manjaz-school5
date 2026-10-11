@@ -72,6 +72,39 @@
       color: #666;
     }
 
+    .work-attachments {
+      margin-top: 28px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+
+    .work-attachments h2 {
+      font-size: 20px;
+      margin: 0 0 14px;
+    }
+
+    .attachment-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .attachment-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1px solid #dbe5e6;
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+      color: #0f6263;
+      background: #fbfdfd;
+    }
+
+    .attachment-empty {
+      color: #777;
+      font-size: 14px;
+    }
+
     .work-loading,
     .work-error {
       text-align: center;
@@ -191,6 +224,30 @@
       document.title =
         `${data.title || 'تفاصيل المنجز'} | بوابة المنجزات`;
 
+      const { data: attachments, error: attachmentError } = await supabase
+        .from('achievement_attachments')
+        .select('file_name,file_path,mime_type')
+        .eq('achievement_id', workId)
+        .order('created_at', { ascending: true });
+
+      if (attachmentError) {
+        console.error('تعذر تحميل مرفقات المنجز:', attachmentError);
+      }
+
+      const attachmentMarkup = (attachments || []).map(file => {
+        const { data: publicData } = supabase.storage
+          .from('achievement-files')
+          .getPublicUrl(file.file_path);
+        const url = publicData?.publicUrl || '#';
+        const isImage = (file.mime_type || '').startsWith('image/');
+        return `
+          <a class="attachment-link" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">
+            <span aria-hidden="true">${isImage ? 'صورة' : 'PDF'}</span>
+            <span>${escapeHTML(file.file_name || 'مرفق')}</span>
+          </a>
+        `;
+      }).join('');
+
       details.innerHTML = `
 
         <span class="work-category">
@@ -234,10 +291,20 @@
 
         </div>
 
+        <section class="work-attachments" aria-labelledby="attachmentsTitle">
+          <h2 id="attachmentsTitle">المرفقات</h2>
+          <div class="attachment-list">
+            ${attachmentMarkup || '<p class="attachment-empty">لا توجد مرفقات لهذا المنجز.</p>'}
+          </div>
+        </section>
+
       `;
     }
 
-    loadWork();
+    loadWork().catch(error => {
+      console.error(error);
+      details.innerHTML = '<div class="work-error">حدث خطأ أثناء تحميل تفاصيل المنجز.</div>';
+    });
 
   </script>
 
