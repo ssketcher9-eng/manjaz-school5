@@ -270,6 +270,16 @@
     const workId =
       params.get('id');
 
+    // عند فتح التفاصيل داخل النافذة المنبثقة، أغلق النافذة بدل التنقل داخل الإطار.
+    document.querySelector('.back-button')?.addEventListener('click', event => {
+      if (window.parent !== window) {
+        event.preventDefault();
+        window.parent.document
+          .querySelector('#workDetailsModal .work-details-modal-close')
+          ?.click();
+      }
+    });
+
     function escapeHTML(value) {
       return String(value ?? '')
         .replace(/&/g, '&amp;')
