@@ -1223,8 +1223,47 @@ $('#allWorks')?.addEventListener(
 
     if (!workId) return;
 
-    window.location.href =
+    let detailsModal = document.getElementById('workDetailsModal');
+
+    if (!detailsModal) {
+      detailsModal = document.createElement('div');
+      detailsModal.id = 'workDetailsModal';
+      detailsModal.className = 'work-details-modal';
+      detailsModal.setAttribute('role', 'dialog');
+      detailsModal.setAttribute('aria-modal', 'true');
+      detailsModal.setAttribute('aria-label', 'تفاصيل المنجز');
+      detailsModal.innerHTML = `
+        <div class="work-details-modal-panel">
+          <button class="work-details-modal-close" type="button" aria-label="إغلاق">×</button>
+          <iframe class="work-details-modal-frame" title="تفاصيل المنجز"></iframe>
+        </div>
+      `;
+      document.body.appendChild(detailsModal);
+
+      const closeDetailsModal = () => {
+        detailsModal.classList.remove('is-open');
+        document.body.classList.remove('details-modal-open');
+        detailsModal.querySelector('iframe').src = 'about:blank';
+      };
+
+      detailsModal.querySelector('.work-details-modal-close')
+        .addEventListener('click', closeDetailsModal);
+
+      detailsModal.addEventListener('click', event => {
+        if (event.target === detailsModal) closeDetailsModal();
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && detailsModal.classList.contains('is-open')) {
+          closeDetailsModal();
+        }
+      });
+    }
+
+    detailsModal.querySelector('iframe').src =
       `work.html?id=${encodeURIComponent(workId)}`;
+    detailsModal.classList.add('is-open');
+    document.body.classList.add('details-modal-open');
   }
 );
   /* =========================
