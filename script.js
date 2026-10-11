@@ -789,24 +789,38 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         .in('achievement_id', workIds)
         .order('created_at', { ascending: true });
 
+      const coverByWork = new Map();
+
       if (attachmentError) {
-        console.warn('تعذر تحميل صور أغلفة المنجزات:', attachmentError);
+        console.warn('تعذر تحميل بيانات مرفقات أغلفة المنجزات:', attachmentError);
       } else {
-        const coverByWork = new Map();
-        (attachmentRows || []).forEach(file => {
-          if (!file.mime_type || !file.mime_type.startsWith('image/')) return;
-          if (coverByWork.has(String(file.achievement_id))) return;
+        for (const file of (attachmentRows || [])) {
+          if (!file.mime_type || !file.mime_type.startsWith('image/')) continue;
+          if (coverByWork.has(String(file.achievement_id))) continue;
+          if (!file.file_path) continue;
+
           const { data: publicData } = supabase.storage
             .from('achievement-files')
             .getPublicUrl(file.file_path);
-          if (publicData?.publicUrl) coverByWork.set(String(file.achievement_id), publicData.publicUrl);
-        });
 
-        state.works = state.works.map(work => ({
-          ...work,
-          cover_image_url: work.image_url || coverByWork.get(String(work.id)) || ''
-        }));
+          let coverUrl = publicData?.publicUrl || '';
+
+          // احتياطًا إذا لم يكن رابط الملف العام متاحًا.
+          if (!coverUrl) {
+            const { data: signedData, error: signedError } = await supabase.storage
+              .from('achievement-files')
+              .createSignedUrl(file.file_path, 3600);
+            if (!signedError) coverUrl = signedData?.signedUrl || '';
+          }
+
+          if (coverUrl) coverByWork.set(String(file.achievement_id), coverUrl);
+        }
       }
+
+      state.works = state.works.map(work => ({
+        ...work,
+        cover_image_url: work.image_url || coverByWork.get(String(work.id)) || ''
+      }));
     }
 
     renderWorks();
