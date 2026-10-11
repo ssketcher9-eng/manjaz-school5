@@ -804,7 +804,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       state.works.filter(work => {
         const searchable =
           `${work.title || ''}
-           ${work.submitter_name || work.submitter_name || work.owner || ''}
+           ${work.submitter_name || work.owner || ''}
            ${work.description || ''}`
             .toLowerCase();
 
