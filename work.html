@@ -16,7 +16,7 @@
     }
 
     .work-page-container {
-      width: min(850px, 100%);
+      width: min(1040px, 100%);
       margin: 0 auto;
     }
 
@@ -39,15 +39,41 @@
     .work-details-card {
       background: white;
       border-radius: 22px;
-      padding: 0 35px 35px;
+      padding: 30px 35px 35px;
       overflow: hidden;
       box-shadow: 0 8px 30px rgba(0,0,0,.08);
     }
 
+    .work-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr);
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 28px;
+    }
+
+    .work-summary { min-width: 0; }
+    .work-summary h1 { overflow-wrap: anywhere; }
+    .work-summary .work-category,
+    .work-summary .work-status { margin-bottom: 12px; }
+
+    .work-section {
+      border-top: 1px solid #e8eeee;
+      padding-top: 22px;
+      margin-top: 24px;
+    }
+    .work-section h2 { margin: 0 0 12px; font-size: 21px; color: #123e55; }
+    .work-section p { margin: 0; line-height: 2; white-space: pre-wrap; }
+    .work-attachments .attachment-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
     .work-cover {
-      width: calc(100% + 70px);
-      height: clamp(240px, 42vw, 470px);
-      margin: 0 -35px 28px;
+      width: 100%;
+      height: clamp(300px, 42vw, 480px);
+      margin: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -70,7 +96,7 @@
     .attachment-preview {
       display: block;
       width: 100%;
-      max-height: 220px;
+      max-height: 260px;
       object-fit: contain;
       border-radius: 10px;
       margin-top: 8px;
@@ -84,9 +110,11 @@
 
     @media (max-width: 600px) {
       .work-page { padding: 20px 12px; }
-      .work-details-card { padding: 0 18px 22px; border-radius: 16px; }
-      .work-cover { width: calc(100% + 36px); height: 260px; margin: 0 -18px 22px; }
+      .work-details-card { padding: 18px 18px 22px; border-radius: 16px; }
+      .work-hero { grid-template-columns: 1fr; gap: 20px; }
+      .work-cover { height: 320px; }
       .work-details-card h1 { font-size: 25px; }
+      .work-attachments .attachment-list { grid-template-columns: 1fr; }
     }
 
     .work-status {
@@ -121,12 +149,13 @@
       line-height: 2;
       font-size: 17px;
       white-space: pre-wrap;
-      margin-bottom: 30px;
+      margin-bottom: 0;
     }
 
     .work-meta {
       border-top: 1px solid #eee;
-      padding-top: 20px;
+      margin-top: 22px;
+      padding-top: 18px;
       line-height: 2;
       color: #666;
     }
@@ -320,63 +349,37 @@
       }).join('');
 
       details.innerHTML = `
-        ${cover ? `
+        <div class="work-hero">
           <div class="work-cover">
-            <img src="${escapeHTML(cover.url)}" alt="${escapeHTML(data.title || 'غلاف المنجز')}" fetchpriority="high">
+            ${cover
+              ? `<img src="${escapeHTML(cover.url)}" alt="${escapeHTML(data.title || 'غلاف المنجز')}" fetchpriority="high">`
+              : '<div class="work-cover-empty">لا توجد صورة مرفقة لهذا المنجز</div>'}
           </div>
-        ` : ''}
 
-        <span class="work-category">
-          ${escapeHTML(data.category || 'منجز')}
-        </span>
-        <span class="work-status ${(['published', 'approved'].includes(data.status) ? 'status-approved' : (['needs_edit', 'rejected'].includes(data.status) ? 'status-revision' : 'status-pending'))}">
-          ${escapeHTML(({published:'معتمد', approved:'معتمد', pending:'قيد المراجعة', under_review:'قيد المراجعة', needs_edit:'بحاجة إلى تعديل', rejected:'غير معتمد'})[data.status] || data.status || 'قيد المراجعة')}
-        </span>
+          <div class="work-summary">
+            <span class="work-category">${escapeHTML(data.category || 'منجز')}</span>
+            <span class="work-status ${(['published', 'approved'].includes(data.status) ? 'status-approved' : (['needs_edit', 'rejected'].includes(data.status) ? 'status-revision' : 'status-pending'))}">
+              ${escapeHTML(({published:'معتمد', approved:'معتمد', pending:'قيد المراجعة', under_review:'قيد المراجعة', needs_edit:'بحاجة إلى تعديل', rejected:'غير معتمد'})[data.status] || data.status || 'قيد المراجعة')}
+            </span>
 
-        <h1>
-          ${escapeHTML(data.title || 'بدون عنوان')}
-        </h1>
+            <h1>${escapeHTML(data.title || 'بدون عنوان')}</h1>
+            <div class="work-description">
+              ${escapeHTML(data.description || 'لا يوجد وصف لهذا المنجز.')}
+            </div>
 
-        <div class="work-description">
-          ${escapeHTML(
-            data.description ||
-            'لا يوجد وصف لهذا المنجز.'
-          )}
+            <div class="work-meta">
+              ${data.achievement_date ? `<div><strong>التاريخ:</strong> ${escapeHTML(data.achievement_date)}</div>` : ''}
+              ${data.submitter_name ? `<div><strong>المنفذ:</strong> ${escapeHTML(data.submitter_name)}</div>` : ''}
+            </div>
+          </div>
         </div>
 
-        <div class="work-meta">
-
-          ${
-            data.achievement_date
-              ? `
-                <div>
-                  <strong>التاريخ:</strong>
-                  ${escapeHTML(data.achievement_date)}
-                </div>
-              `
-              : ''
-          }
-
-          ${
-            data.submitter_name
-              ? `
-                <div>
-                  <strong>المنفذ:</strong>
-                  ${escapeHTML(data.submitter_name)}
-                </div>
-              `
-              : ''
-          }
-
-        </div>
-
-        <section class="work-attachments" aria-labelledby="attachmentsTitle">
-          <h2 id="attachmentsTitle">المرفقات</h2>
+        <section class="work-attachments work-section" aria-labelledby="attachmentsTitle">
+          <h2 id="attachmentsTitle">الصور والمرفقات</h2>
           <div class="attachment-list">
             ${attachmentMarkup || '<p class="attachment-empty">لا توجد مرفقات لهذا المنجز.</p>'}
           </div>
         </section>
-
       `;
     }
 
