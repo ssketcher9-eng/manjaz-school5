@@ -39,8 +39,54 @@
     .work-details-card {
       background: white;
       border-radius: 22px;
-      padding: 35px;
+      padding: 0 35px 35px;
+      overflow: hidden;
       box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+
+    .work-cover {
+      width: calc(100% + 70px);
+      height: clamp(240px, 42vw, 470px);
+      margin: 0 -35px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #edf2f3;
+    }
+
+    .work-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .work-cover-empty {
+      color: #718087;
+      font-size: 14px;
+    }
+
+    .attachment-preview {
+      display: block;
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border-radius: 10px;
+      margin-top: 8px;
+      background: #f3f6f6;
+    }
+
+    .attachment-link {
+      flex-wrap: wrap;
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      .work-page { padding: 20px 12px; }
+      .work-details-card { padding: 0 18px 22px; border-radius: 16px; }
+      .work-cover { width: calc(100% + 36px); height: 260px; margin: 0 -18px 22px; }
+      .work-details-card h1 { font-size: 25px; }
     }
 
     .work-status {
@@ -247,21 +293,38 @@
         console.error('تعذر تحميل مرفقات المنجز:', attachmentError);
       }
 
-      const attachmentMarkup = (attachments || []).map(file => {
+      const preparedAttachments = await Promise.all((attachments || []).map(async file => {
         const { data: publicData } = supabase.storage
           .from('achievement-files')
           .getPublicUrl(file.file_path);
-        const url = publicData?.publicUrl || '#';
+        let url = publicData?.publicUrl || '';
+        if (!url && file.file_path) {
+          const { data: signedData } = await supabase.storage
+            .from('achievement-files')
+            .createSignedUrl(file.file_path, 3600);
+          url = signedData?.signedUrl || '';
+        }
+        return { ...file, url };
+      }));
+
+      const cover = preparedAttachments.find(file => (file.mime_type || '').startsWith('image/') && file.url);
+      const attachmentMarkup = preparedAttachments.map(file => {
         const isImage = (file.mime_type || '').startsWith('image/');
         return `
-          <a class="attachment-link" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">
+          <a class="attachment-link" href="${escapeHTML(file.url || '#')}" target="_blank" rel="noopener noreferrer">
             <span aria-hidden="true">${isImage ? 'صورة' : 'PDF'}</span>
             <span>${escapeHTML(file.file_name || 'مرفق')}</span>
+            ${isImage && file.url ? `<img class="attachment-preview" src="${escapeHTML(file.url)}" alt="${escapeHTML(file.file_name || 'صورة مرفقة')}" loading="lazy">` : ''}
           </a>
         `;
       }).join('');
 
       details.innerHTML = `
+        ${cover ? `
+          <div class="work-cover">
+            <img src="${escapeHTML(cover.url)}" alt="${escapeHTML(data.title || 'غلاف المنجز')}" fetchpriority="high">
+          </div>
+        ` : ''}
 
         <span class="work-category">
           ${escapeHTML(data.category || 'منجز')}
