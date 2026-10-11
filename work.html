@@ -43,6 +43,19 @@
       box-shadow: 0 8px 30px rgba(0,0,0,.08);
     }
 
+    .work-status {
+      display: inline-block;
+      margin: 0 0 15px 8px;
+      padding: 7px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .work-status.status-approved { background: #e2f5e9; color: #17663a; }
+    .work-status.status-pending { background: #fff2d8; color: #8a5a00; }
+    .work-status.status-revision { background: #fde7e7; color: #9d2525; }
+
     .work-category {
       display: inline-block;
       padding: 7px 14px;
@@ -252,6 +265,9 @@
 
         <span class="work-category">
           ${escapeHTML(data.category || 'منجز')}
+        </span>
+        <span class="work-status ${(['published', 'approved'].includes(data.status) ? 'status-approved' : (['needs_edit', 'rejected'].includes(data.status) ? 'status-revision' : 'status-pending'))}">
+          ${escapeHTML(({published:'معتمد', approved:'معتمد', pending:'قيد المراجعة', under_review:'قيد المراجعة', needs_edit:'بحاجة إلى تعديل', rejected:'غير معتمد'})[data.status] || data.status || 'قيد المراجعة')}
         </span>
 
         <h1>
