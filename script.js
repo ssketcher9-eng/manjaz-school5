@@ -846,13 +846,13 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     document.querySelectorAll('[data-section-cards]').forEach(container => {
       const category = container.dataset.sectionCards;
       const items = state.works.filter(work => work.category === category &&
-        (state.role === 'admin' || ['published', 'approved'].includes(work.status) || work.created_by === state.user?.id));
+        (state.role === 'admin' || ['published', 'approved'].includes(work.status)));
       if (!items.length) {
         container.innerHTML = '<div class="empty">لا توجد منجزات في هذا القسم حتى الآن.</div>';
         return;
       }
       container.innerHTML = items.map(work => {
-        const canManage = state.role === 'admin' || (state.user && work.created_by === state.user.id);
+        const canManage = state.role === 'admin';
         return `<article class="card section-achievement-card" data-section-work-id="${escapeHTML(work.id)}" role="button" tabindex="0">
           ${(work.cover_image_url || work.image_url) ? `<div class="card-image-wrap"><img class="card-image" src="${escapeHTML(work.cover_image_url || work.image_url)}" alt="${escapeHTML(work.title || 'صورة المنجز')}" loading="lazy" onerror="this.closest('.card-image-wrap')?.remove()"></div>` : '<div class="section-card-placeholder">منجز</div>'}
           <div class="card-labels"><span class="tag">${escapeHTML(work.category || category)}</span><span class="status-badge ${statusClass(work.status)}">${escapeHTML(statusLabel(work.status))}</span></div>
@@ -1020,11 +1020,6 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       async e => {
         e.preventDefault();
 
-        if (!state.user) {
-          openAuthModal('login');
-          return;
-        }
-
         const title =
           $('#title')?.value.trim();
 
@@ -1109,8 +1104,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             impact,
             audience,
             entity,
-            created_by: state.user.id,
-            status: 'pending'
+            created_by: null,
+            status: 'published'
           };
 
           const { data: achievement, error: saveError } =
@@ -1134,7 +1129,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             );
 
             const filePath =
-              `${state.user.id}/${achievement.id}/${crypto.randomUUID()}-${safeName}`;
+              `${'public'}/${achievement.id}/${crypto.randomUUID()}-${safeName}`;
 
             const { error: uploadError } =
               await supabase.storage
@@ -1167,7 +1162,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
           goToPage('works');
 
           alert(
-            'تم حفظ المنجز وإرفاق الملفات بنجاح. الحالة: قيد المراجعة.'
+            'تم نشر المنجز وإرفاق الملفات بنجاح.'
           );
         } catch (error) {
           console.error(error);
