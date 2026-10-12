@@ -1154,7 +1154,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
                   file_name: file.name,
                   file_path: filePath,
                   mime_type: file.type,
-                  uploaded_by: state.user.id
+                  uploaded_by: null
                 });
 
             if (metadataError) throw metadataError;
