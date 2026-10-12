@@ -50,10 +50,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     if (!button) return;
     event.preventDefault();
     const category = button.dataset.sectionAdd;
-    if (!state.user) {
-      openAuthModal('login');
-      return;
-    }
+    const sectionInput = $('#achievementSection');
+    if (sectionInput) sectionInput.value = button.dataset.sectionId || 'works';
     const categoryInput = $('#category');
     if (categoryInput) categoryInput.value = category;
     goToPage('add');
@@ -845,7 +843,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   function renderSectionCards() {
     document.querySelectorAll('[data-section-cards]').forEach(container => {
       const category = container.dataset.sectionCards;
-      const items = state.works.filter(work => work.category === category &&
+      const sectionId = container.dataset.sectionId || '';
+      const items = state.works.filter(work => work.department === sectionId &&
         (state.role === 'admin' || ['published', 'approved'].includes(work.status)));
       if (!items.length) {
         container.innerHTML = '<div class="empty">لا توجد منجزات في هذا القسم حتى الآن.</div>';
@@ -1038,6 +1037,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         const impact = $('#impact')?.value.trim() || '';
         const audience = $('#audience')?.value.trim() || '';
         const entity = $('#entity')?.value.trim() || '';
+        const sectionId = $('#achievementSection')?.value || 'works';
 
         if (!title) {
           alert(
@@ -1049,7 +1049,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         const owner =
           ownerInput ||
           state.profile?.full_name ||
-          state.user.email ||
+          state.user?.email ||
           '';
 
         const button =
@@ -1104,6 +1104,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             impact,
             audience,
             entity,
+            department: sectionId,
             created_by: null,
             status: 'published'
           };
@@ -1156,10 +1157,12 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
           }
 
           achievementForm.reset();
+          const sectionInput = $('#achievementSection');
+          if (sectionInput) sectionInput.value = sectionId;
 
           await loadWorks();
 
-          goToPage('works');
+          goToPage(sectionId);
 
           alert(
             'تم نشر المنجز وإرفاق الملفات بنجاح.'
