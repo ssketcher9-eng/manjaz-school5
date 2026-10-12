@@ -49,13 +49,15 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   ========================= */
 
   const sections = [
-    ['رعاية وتوجيه طلابي متميز', '▤', '#works', '#add', 'إضافة'],
-    ['شراكة مجتمعية فاعلة', '▧', '#workshops', '#workshops', 'إضافة', 'workshops'],
-    ['تواصل أسري فعال', '▤', '#certificates', '#certificates', 'إصدار', 'certificates'],
-    ['ورش تدريبية تطويرية', '▣', '#lessons', '#add', 'إضافة'],
-    ['هوية وطنية راسخة', '◇', '#awards', '#awards', 'عرض'],
-    ['منجزات نوعية مستدامة', '◎', '#partners', '#partners', 'عرض'],
-    ['نشاط طلابي متميز', '◔', '#reports', '#reports', 'عرض']
+    ['منجزات نوعية مستدامة', '▤', '#works', '#add', 'إضافة'],
+    ['ورش تدريبية تطويرية', '▧', '#workshops', '#workshops', 'إضافة', 'workshops'],
+    ['تعليم متميز وتعلم فاعل', '▣', '#lessons', '#lessons', 'عرض'],
+    ['نشاط طلابي متميز', '◇', '#awards', '#awards', 'عرض'],
+    ['شراكة مجتمعية فاعلة', '◎', '#partners', '#partners', 'عرض'],
+    ['نتائج التعلم نحو التميز والإتقان', '◔', '#reports', '#reports', 'عرض'],
+    ['رعاية وتوجيه طلابي متميز', '♧', '#awards', '#awards', 'عرض'],
+    ['هوية وطنية راسخة', '◇', '#reports', '#reports', 'عرض'],
+    ['تواصل أسري فعال', '◎', '#partners', '#partners', 'عرض']
   ];
 
   const homeSections = $('#homeSections');
@@ -65,8 +67,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       <article class="section-card">
         <h2><span>${s[1]}</span>${s[0]}</h2>
         <div class="section-actions">
-          <a class="outline" href="${s[2]}" ${s[5] === 'workshops' ? 'data-workshop-view' : (s[5] === 'certificates' ? 'data-certificate-view' : '')}>استعراض</a>
-          <a class="fill" href="${s[3]}" ${s[5] === 'workshops' ? 'data-workshop-add' : (s[5] === 'certificates' ? 'data-certificate-view' : '')}>${s[4]}</a>
+          <a class="outline" href="${s[2]}" ${s[5] === 'workshops' ? 'data-workshop-view' : ''}>استعراض</a>
+          <a class="fill" href="${s[3]}" ${s[5] === 'workshops' ? 'data-workshop-add' : ''}>${s[4]}</a>
         </div>
       </article>
     `).join('');
@@ -74,7 +76,6 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     homeSections.addEventListener('click', event => {
       const addWorkshop = event.target.closest('[data-workshop-add]');
       const viewWorkshops = event.target.closest('[data-workshop-view]');
-      const viewCertificates = event.target.closest('[data-certificate-view]');
 
       if (addWorkshop) {
         event.preventDefault();
@@ -82,9 +83,6 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         if (category) category.value = 'ورشة تدريبية';
         goToPage('workshops');
         document.querySelector('#newWorkshopBtn')?.click();
-      } else if (viewCertificates) {
-        event.preventDefault();
-        goToPage('certificates');
       } else if (viewWorkshops) {
         event.preventDefault();
         goToPage('workshops');
