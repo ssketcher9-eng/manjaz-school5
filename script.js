@@ -438,7 +438,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   let authMode = 'login';
 
   function openAuthModal(mode = 'login') {
-    authMode = mode;
+    authMode = 'login';
 
     const modal = $('#authModal');
     const title = $('#authTitle');
