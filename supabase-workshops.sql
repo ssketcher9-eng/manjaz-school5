@@ -49,3 +49,60 @@ drop policy if exists "Admins update certificate assets" on storage.objects;
 create policy "Admins update certificate assets" on storage.objects for update to authenticated using (bucket_id = 'certificate-assets' and public.is_admin()) with check (bucket_id = 'certificate-assets' and public.is_admin());
 drop policy if exists "Admins delete certificate assets" on storage.objects;
 create policy "Admins delete certificate assets" on storage.objects for delete to authenticated using (bucket_id = 'certificate-assets' and public.is_admin());
+
+
+-- مرفقات الورش التدريبية (صور وملفات PDF)
+create table if not exists public.workshop_attachments (
+ id uuid primary key default gen_random_uuid(),
+ workshop_id uuid not null references public.workshops(id) on delete cascade,
+ file_name text not null,
+ file_path text not null unique,
+ mime_type text not null check (mime_type in ('image/jpeg','image/png','image/webp','application/pdf')),
+ uploaded_by uuid references auth.users(id) on delete set null,
+ created_at timestamptz not null default now()
+);
+alter table public.workshop_attachments enable row level security;
+drop policy if exists "Anyone can view workshop attachments" on public.workshop_attachments;
+create policy "Anyone can view workshop attachments" on public.workshop_attachments
+ for select to anon, authenticated using (true);
+drop policy if exists "Workshop owners or admins add attachments" on public.workshop_attachments;
+create policy "Workshop owners or admins add attachments" on public.workshop_attachments
+ for insert to authenticated with check (
+  auth.uid() = uploaded_by and exists (
+   select 1 from public.workshops w
+   where w.id = workshop_id and (w.created_by = auth.uid() or public.is_admin())
+  )
+);
+drop policy if exists "Workshop owners or admins delete attachments" on public.workshop_attachments;
+create policy "Workshop owners or admins delete attachments" on public.workshop_attachments
+ for delete to authenticated using (
+  exists (select 1 from public.workshops w
+   where w.id = workshop_id and (w.created_by = auth.uid() or public.is_admin()))
+);
+grant select on public.workshop_attachments to anon, authenticated;
+grant insert, delete on public.workshop_attachments to authenticated;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('workshop-files', 'workshop-files', true, 10485760, array['image/jpeg','image/png','image/webp','application/pdf'])
+on conflict (id) do update set public = true, file_size_limit = 10485760,
+ allowed_mime_types = array['image/jpeg','image/png','image/webp','application/pdf'];
+drop policy if exists "Public can view workshop files" on storage.objects;
+create policy "Public can view workshop files" on storage.objects for select using (bucket_id = 'workshop-files');
+drop policy if exists "Workshop owners or admins upload workshop files" on storage.objects;
+create policy "Workshop owners or admins upload workshop files" on storage.objects
+ for insert to authenticated with check (
+  bucket_id = 'workshop-files' and exists (
+   select 1 from public.workshops w
+   where w.id::text = split_part(name, '/', 1)
+    and (w.created_by = auth.uid() or public.is_admin())
+  )
+);
+drop policy if exists "Workshop owners or admins delete workshop files" on storage.objects;
+create policy "Workshop owners or admins delete workshop files" on storage.objects
+ for delete to authenticated using (
+  bucket_id = 'workshop-files' and exists (
+   select 1 from public.workshops w
+   where w.id::text = split_part(name, '/', 1)
+    and (w.created_by = auth.uid() or public.is_admin())
+  )
+);
