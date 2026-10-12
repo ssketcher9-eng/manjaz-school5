@@ -66,13 +66,13 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   const sections = [
     ['منجزات نوعية مستدامة', '▤', '#works', '#add', 'إضافة'],
     ['ورش تدريبية تطويرية', '▧', '#workshops', '#workshops', 'إضافة', 'workshops'],
-    ['تعليم متميز وتعلم فاعل', '▣', '#lessons', '#lessons', 'عرض'],
-    ['نشاط طلابي متميز', '◇', '#awards', '#awards', 'عرض'],
-    ['شراكة مجتمعية فاعلة', '◎', '#partners', '#partners', 'عرض'],
-    ['نتائج التعلم نحو التميز والإتقان', '◔', '#reports', '#reports', 'عرض'],
-    ['رعاية وتوجيه طلابي متميز', '♧', '#awards', '#awards', 'عرض'],
-    ['هوية وطنية راسخة', '◇', '#reports', '#reports', 'عرض'],
-    ['تواصل أسري فعال', '◎', '#partners', '#partners', 'عرض']
+    ['تعليم متميز وتعلم فاعل', '▣', '#lessons', '#lessons', 'إضافة'],
+    ['نشاط طلابي متميز', '◇', '#awards', '#awards', 'إضافة'],
+    ['شراكة مجتمعية فاعلة', '◎', '#partners', '#partners', 'إضافة'],
+    ['نتائج التعلم نحو التميز والإتقان', '◔', '#reports', '#reports', 'إضافة'],
+    ['رعاية وتوجيه طلابي متميز', '♧', '#guidance', '#guidance', 'إضافة'],
+    ['هوية وطنية راسخة', '◇', '#identity', '#identity', 'إضافة'],
+    ['تواصل أسري فعال', '◎', '#family', '#family', 'إضافة']
   ];
 
   const homeSections = $('#homeSections');
