@@ -44,6 +44,21 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     return 'status-pending';
   }
 
+  // فتح نموذج الإضافة من القسم مع تحديد مجاله مسبقًا.
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-section-add]');
+    if (!button) return;
+    event.preventDefault();
+    const category = button.dataset.sectionAdd;
+    if (!state.user) {
+      openAuthModal('login');
+      return;
+    }
+    const categoryInput = $('#category');
+    if (categoryInput) categoryInput.value = category;
+    goToPage('add');
+  });
+
   /* =========================
      الأقسام الرئيسية
   ========================= */
@@ -846,7 +861,30 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     renderAdminPanel();
   }
 
+  function renderSectionCards() {
+    document.querySelectorAll('[data-section-cards]').forEach(container => {
+      const category = container.dataset.sectionCards;
+      const items = state.works.filter(work => work.category === category &&
+        (state.role === 'admin' || ['published', 'approved'].includes(work.status) || work.created_by === state.user?.id));
+      if (!items.length) {
+        container.innerHTML = '<div class="empty">لا توجد منجزات في هذا القسم حتى الآن.</div>';
+        return;
+      }
+      container.innerHTML = items.map(work => {
+        const canManage = state.role === 'admin' || (state.user && work.created_by === state.user.id);
+        return `<article class="card section-achievement-card" data-section-work-id="${escapeHTML(work.id)}" role="button" tabindex="0">
+          ${(work.cover_image_url || work.image_url) ? `<div class="card-image-wrap"><img class="card-image" src="${escapeHTML(work.cover_image_url || work.image_url)}" alt="${escapeHTML(work.title || 'صورة المنجز')}" loading="lazy" onerror="this.closest('.card-image-wrap')?.remove()"></div>` : '<div class="section-card-placeholder">منجز</div>'}
+          <div class="card-labels"><span class="tag">${escapeHTML(work.category || category)}</span><span class="status-badge ${statusClass(work.status)}">${escapeHTML(statusLabel(work.status))}</span></div>
+          <h3>${escapeHTML(work.title || 'بدون عنوان')}</h3>
+          <small>التاريخ: ${escapeHTML(work.achievement_date || '—')}</small>
+          ${canManage ? `<div class="section-card-actions"><button type="button" data-section-open="${escapeHTML(work.id)}">التفاصيل</button></div>` : ''}
+        </article>`;
+      }).join('');
+    });
+  }
+
   function renderWorks() {
+    renderSectionCards();
     const container = $('#allWorks');
 
     if (!container) return;
