@@ -154,12 +154,6 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     link.addEventListener('click', e => {
       const id = link.getAttribute('href').slice(1);
 
-      if (id === 'add' && !state.user) {
-        e.preventDefault();
-        openAuthModal('login');
-        return;
-      }
-
       if (
         (id === 'admin' || id === 'settings') &&
         state.role !== 'admin'
