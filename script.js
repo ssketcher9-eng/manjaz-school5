@@ -49,13 +49,13 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   ========================= */
 
   const sections = [
-    ['أبرز المنجزات', '▤', '#works', '#add', 'إضافة'],
-    ['الورش التدريبية', '▧', '#workshops', '#workshops', 'إضافة', 'workshops'],
-    ['إصدار شهادات الورش', '▤', '#certificates', '#certificates', 'إصدار', 'certificates'],
-    ['الدروس التطبيقية', '▣', '#lessons', '#add', 'إضافة'],
-    ['التكريمات والحوافز', '◇', '#awards', '#awards', 'عرض'],
-    ['الشراكات', '◎', '#partners', '#partners', 'عرض'],
-    ['التقارير والإحصاءات', '◔', '#reports', '#reports', 'عرض']
+    ['رعاية وتوجيه طلابي متميز', '▤', '#works', '#add', 'إضافة'],
+    ['شراكة مجتمعية فاعلة', '▧', '#workshops', '#workshops', 'إضافة', 'workshops'],
+    ['تواصل أسري فعال', '▤', '#certificates', '#certificates', 'إصدار', 'certificates'],
+    ['ورش تدريبية تطويرية', '▣', '#lessons', '#add', 'إضافة'],
+    ['هوية وطنية راسخة', '◇', '#awards', '#awards', 'عرض'],
+    ['منجزات نوعية مستدامة', '◎', '#partners', '#partners', 'عرض'],
+    ['نشاط طلابي متميز', '◔', '#reports', '#reports', 'عرض']
   ];
 
   const homeSections = $('#homeSections');
