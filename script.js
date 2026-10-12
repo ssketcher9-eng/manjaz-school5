@@ -66,13 +66,13 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   const sections = [
     ['منجزات نوعية مستدامة', '▤', '#works', '#add', 'إضافة'],
     ['ورش تدريبية تطويرية', '▧', '#workshops', '#workshops', 'إضافة', 'workshops'],
-    ['تعليم متميز وتعلم فاعل', '▣', '#lessons', '#lessons', 'إضافة'],
-    ['نشاط طلابي متميز', '◇', '#awards', '#awards', 'إضافة'],
-    ['شراكة مجتمعية فاعلة', '◎', '#partners', '#partners', 'إضافة'],
-    ['نتائج التعلم نحو التميز والإتقان', '◔', '#reports', '#reports', 'إضافة'],
-    ['رعاية وتوجيه طلابي متميز', '♧', '#guidance', '#guidance', 'إضافة'],
-    ['هوية وطنية راسخة', '◇', '#identity', '#identity', 'إضافة'],
-    ['تواصل أسري فعال', '◎', '#family', '#family', 'إضافة']
+    ['تعليم متميز وتعلم فاعل', '▣', '#lessons', '#lessons', 'إضافة', null, 'تدريس'],
+    ['نشاط طلابي متميز', '◇', '#awards', '#awards', 'إضافة', null, 'نشاط طلابي'],
+    ['شراكة مجتمعية فاعلة', '◎', '#partners', '#partners', 'إضافة', null, 'شراكة'],
+    ['نتائج التعلم نحو التميز والإتقان', '◔', '#reports', '#reports', 'إضافة', null, 'نواتج تعلم'],
+    ['رعاية وتوجيه طلابي متميز', '♧', '#guidance', '#guidance', 'إضافة', null, 'توجيه طلابي'],
+    ['هوية وطنية راسخة', '◇', '#identity', '#identity', 'إضافة', null, 'قيم'],
+    ['تواصل أسري فعال', '◎', '#family', '#family', 'إضافة', null, 'أولياء الأمور']
   ];
 
   const homeSections = $('#homeSections');
@@ -83,7 +83,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         <h2><span>${s[1]}</span>${s[0]}</h2>
         <div class="section-actions">
           <a class="outline" href="${s[2]}" ${s[5] === 'workshops' ? 'data-workshop-view' : ''}>استعراض</a>
-          <a class="fill" href="${s[3]}" ${s[5] === 'workshops' ? 'data-workshop-add' : ''}>${s[4]}</a>
+          <a class="fill" href="${s[3]}" ${s[5] === 'workshops' ? 'data-workshop-add' : (s[6] ? `data-section-add="${s[6]}"` : '')}>${s[4]}</a>
         </div>
       </article>
     `).join('');
