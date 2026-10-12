@@ -23,3 +23,29 @@ create policy "Authenticated users can issue workshop certificates" on public.wo
 -- منح صلاحيات SQL اللازمة؛ سياسات RLS أعلاه تظل مسؤولة عن تحديد الصفوف المسموح بها
 grant select, insert, update, delete on public.workshops to authenticated;
 grant select, insert, update, delete on public.workshop_certificates to authenticated;
+
+-- إعداد قالب شهادة موحد محفوظ على مستوى الموقع
+create table if not exists public.site_settings (
+ key text primary key,
+ value jsonb not null default '{}'::jsonb,
+ updated_at timestamptz not null default now(),
+ updated_by uuid references auth.users(id) on delete set null
+);
+alter table public.site_settings enable row level security;
+drop policy if exists "Anyone can read certificate template setting" on public.site_settings;
+create policy "Anyone can read certificate template setting" on public.site_settings for select to anon, authenticated using (key = 'certificate_template');
+drop policy if exists "Admins manage certificate template setting" on public.site_settings;
+create policy "Admins manage certificate template setting" on public.site_settings for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select on public.site_settings to anon, authenticated;
+grant insert, update, delete on public.site_settings to authenticated;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('certificate-assets', 'certificate-assets', true, 8388608, array['image/png','image/jpeg','image/webp'])
+on conflict (id) do update set public = true, file_size_limit = 8388608, allowed_mime_types = array['image/png','image/jpeg','image/webp'];
+drop policy if exists "Public can view certificate assets" on storage.objects;
+create policy "Public can view certificate assets" on storage.objects for select using (bucket_id = 'certificate-assets');
+drop policy if exists "Admins upload certificate assets" on storage.objects;
+create policy "Admins upload certificate assets" on storage.objects for insert to authenticated with check (bucket_id = 'certificate-assets' and public.is_admin());
+drop policy if exists "Admins update certificate assets" on storage.objects;
+create policy "Admins update certificate assets" on storage.objects for update to authenticated using (bucket_id = 'certificate-assets' and public.is_admin()) with check (bucket_id = 'certificate-assets' and public.is_admin());
+drop policy if exists "Admins delete certificate assets" on storage.objects;
+create policy "Admins delete certificate assets" on storage.objects for delete to authenticated using (bucket_id = 'certificate-assets' and public.is_admin());
