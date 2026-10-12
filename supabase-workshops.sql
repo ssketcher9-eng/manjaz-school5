@@ -19,3 +19,7 @@ drop policy if exists "Authenticated users can view workshop certificates" on pu
 create policy "Authenticated users can view workshop certificates" on public.workshop_certificates for select to authenticated using (true);
 drop policy if exists "Authenticated users can issue workshop certificates" on public.workshop_certificates;
 create policy "Authenticated users can issue workshop certificates" on public.workshop_certificates for insert to authenticated with check (auth.uid() = issued_by);
+
+-- منح صلاحيات SQL اللازمة؛ سياسات RLS أعلاه تظل مسؤولة عن تحديد الصفوف المسموح بها
+grant select, insert, update, delete on public.workshops to authenticated;
+grant select, insert, update, delete on public.workshop_certificates to authenticated;
