@@ -140,3 +140,37 @@
 .work-details-modal-frame{width:100%;height:100%;flex:1;border:0;background:#f5f7f8}
 body.details-modal-open{overflow:hidden}
 @media(max-width:600px){.work-details-modal{padding:8px}.work-details-modal-panel{width:100%;height:94vh;border-radius:14px}.work-details-modal-close{top:7px;left:7px;width:34px;height:34px}}
+
+
+/* توحيد مظهر صفحات المحتوى مع بطاقات استعراض المنجزات، مع استثناء لوحة الإدارة */
+.page:not(#admin) > .empty,
+.page:not(#admin) > .panel,
+.page:not(#admin) > .toolbar,
+.page:not(#admin) > .cards,
+.page:not(#admin) > .workshop-cards {
+  border-radius: 16px;
+}
+.page:not(#admin) > .empty {
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(18, 62, 85, 0.045);
+}
+.page:not(#admin) > h2 {
+  color: var(--nav);
+  font-size: clamp(22px, 2.5vw, 29px);
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+.page:not(#admin) > .panel {
+  box-shadow: 0 3px 12px rgba(18, 62, 85, 0.045);
+}
+.page:not(#admin) .toolbar input,
+.page:not(#admin) .toolbar select {
+  min-width: 0;
+}
+@media (max-width: 560px) {
+  .page:not(#admin) > .panel,
+  .page:not(#admin) > .empty {
+    padding: 16px;
+  }
+}
