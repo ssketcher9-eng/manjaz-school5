@@ -81,7 +81,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         <h2><span>${s[1]}</span>${s[0]}</h2>
         <div class="section-actions">
           <a class="outline" href="${s[2]}" ${s[5] === 'workshops' ? 'data-workshop-view' : ''}>استعراض</a>
-          <a class="fill" href="${s[3]}" ${s[5] === 'workshops' ? 'data-workshop-add' : (s[6] ? `data-section-add="${s[6]}"` : '')}>${s[4]}</a>
+          <a class="fill" href="${s[3]}" ${s[5] === 'workshops' ? 'data-workshop-add' : (s[6] ? `data-section-add="${s[6]}" data-section-id="${s[2].slice(1)}"` : '')}>${s[4]}</a>
         </div>
       </article>
     `).join('');
