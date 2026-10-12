@@ -376,10 +376,10 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             type="button"
           >×</button>
 
-          <h2 id="authTitle">تسجيل الدخول</h2>
+          <h2 id="authTitle">تسجيل دخول الإدارة</h2>
 
           <p id="authDescription">
-            سجلي الدخول لإضافة منجزاتك إلى الموقع.
+            تسجيل الدخول مخصص للإدارة لإدارة المنجزات.
           </p>
 
           <form id="authForm">
@@ -429,13 +429,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             class="manjaz-auth-message"
           ></div>
 
-          <button
-            id="authSwitch"
-            class="manjaz-auth-switch"
-            type="button"
-          >
-            إنشاء حساب جديد
-          </button>
+
         </div>
       </div>
     `
@@ -449,9 +443,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     const modal = $('#authModal');
     const title = $('#authTitle');
     const description = $('#authDescription');
-    const nameWrap = $('#authNameWrap');
     const submit = $('#authSubmit');
-    const switchButton = $('#authSwitch');
     const message = $('#authMessage');
 
     message.textContent = '';
@@ -461,16 +453,12 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       title.textContent = 'إنشاء حساب';
       description.textContent =
         'أنشئي حسابك كعضوة لإضافة منجزاتك إلى الموقع.';
-      nameWrap.hidden = false;
       submit.textContent = 'إنشاء الحساب';
-      switchButton.textContent = 'لدي حساب بالفعل';
     } else {
-      title.textContent = 'تسجيل الدخول';
+      title.textContent = 'تسجيل دخول الإدارة';
       description.textContent =
-        'سجلي الدخول لإضافة منجزاتك إلى الموقع.';
-      nameWrap.hidden = true;
+        'تسجيل الدخول مخصص للإدارة لإدارة المنجزات.';
       submit.textContent = 'تسجيل الدخول';
-      switchButton.textContent = 'إنشاء حساب جديد';
     }
 
     modal.hidden = false;
@@ -489,13 +477,6 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     }
   });
 
-  $('#authSwitch').addEventListener('click', () => {
-    openAuthModal(
-      authMode === 'login'
-        ? 'signup'
-        : 'login'
-    );
-  });
 
   /* =========================
      زر الحساب في الهيدر
