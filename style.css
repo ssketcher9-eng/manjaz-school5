@@ -225,3 +225,12 @@ body.details-modal-open{overflow:hidden}
 .dashboard-about-panel small{color:var(--muted);line-height:1.7}
 #aboutSettingsMessage{margin:0;min-height:1.5em;color:var(--teal);font-weight:700}
 @media(max-width:700px){.about-vision-grid{grid-template-columns:1fr}.about-stats-grid{grid-template-columns:1fr}.about-stat-card{padding:16px}.about-stat-card strong{font-size:23px}}
+
+.about-staff-section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin:20px 0;box-shadow:0 3px 12px #123e5508}
+.about-staff-section>h3{margin:0 0 16px;font-size:20px}
+.about-staff-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.about-staff-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f6f8f9;border:1px solid #e2e9ea;border-radius:10px;padding:13px}
+.about-staff-item span{font-size:13px;line-height:1.5}
+.about-staff-item strong{color:var(--nav);font-size:20px;flex-shrink:0}
+@media(max-width:700px){.about-staff-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.about-staff-grid{grid-template-columns:1fr}}
