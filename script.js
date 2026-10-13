@@ -841,8 +841,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     document.querySelectorAll('[data-section-cards]').forEach(container => {
       const category = container.dataset.sectionCards;
       const sectionId = container.dataset.sectionId || '';
-      const items = state.works.filter(work => work.department === sectionId &&
-        (state.role === 'admin' || ['published', 'approved'].includes(work.status)));
+      // اعرض المنجزات المعتمدة وقيد المراجعة داخل القسم، مع إظهار الحالة على البطاقة.
+      const items = state.works.filter(work => work.department === sectionId);
       if (!items.length) {
         container.innerHTML = '<div class="empty">لا توجد منجزات في هذا القسم حتى الآن.</div>';
         return;
@@ -879,11 +879,6 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
     const filtered =
       state.works.filter(work => {
-        // لا تظهر المنجزات قيد المراجعة في الاستعراض العام؛ الإدارة ترى الجميع.
-        if (state.role !== 'admin' && !['published', 'approved'].includes(work.status)) {
-          return false;
-        }
-
         const searchable =
           `${work.title || ''}
            ${work.submitter_name || work.owner || ''}
