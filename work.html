@@ -222,6 +222,104 @@
       cursor: pointer;
       font-family: inherit;
     }
+
+    /* توزيع متوازن لتفاصيل المنجز */
+    .work-details-card {
+      padding: clamp(18px, 3vw, 34px);
+    }
+
+    .work-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(20px, 3vw, 34px);
+      align-items: start;
+    }
+
+    .work-cover {
+      min-width: 0;
+      width: 100%;
+      min-height: 280px;
+      aspect-ratio: 4 / 3;
+      padding: 12px;
+      border: 1px solid #e3ebec;
+      border-radius: 16px;
+      background: #f6f9f9;
+    }
+
+    .work-cover img {
+      width: 100%;
+      height: 100%;
+      max-height: 560px;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+
+    .work-cover-empty {
+      padding: 24px;
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    .work-summary {
+      min-width: 0;
+      padding: 4px 0;
+    }
+
+    .work-summary h1 {
+      margin: 14px 0 16px;
+      font-size: clamp(24px, 2.4vw, 32px);
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .work-description {
+      font-size: 16px;
+      line-height: 2;
+      overflow-wrap: anywhere;
+    }
+
+    .work-meta {
+      display: grid;
+      gap: 4px;
+      margin-top: 20px;
+      overflow-wrap: anywhere;
+    }
+
+    .work-attachments .attachment-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .work-attachments .attachment-link {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .work-attachments .attachment-link > span {
+      overflow-wrap: anywhere;
+    }
+
+    .work-attachments .attachment-preview {
+      width: 100%;
+      height: 180px;
+      max-height: 180px;
+      object-fit: contain;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 700px) {
+      .work-page { padding: 18px 12px; }
+      .work-details-card { padding: 16px; }
+      .work-hero { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+      .work-cover { min-height: 0; aspect-ratio: 4 / 3; }
+      .work-cover img { max-height: 42vh; }
+      .work-summary h1 { font-size: 25px; }
+      .work-attachments .attachment-list { grid-template-columns: minmax(0, 1fr); }
+      .work-attachments .attachment-preview { height: 200px; max-height: 200px; }
+    }
+
   </style>
 </head>
 
