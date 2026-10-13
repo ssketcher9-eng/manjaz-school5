@@ -428,7 +428,7 @@
 
       const { data: attachments, error: attachmentError } = await supabase
         .from('achievement_attachments')
-        .select('file_name,file_path,mime_type')
+        .select('file_name,file_path,mime_type,is_cover')
         .eq('achievement_id', workId)
         .order('created_at', { ascending: true });
 
@@ -450,14 +450,23 @@
         return { ...file, url };
       }));
 
-      const cover = preparedAttachments.find(file => (file.mime_type || '').startsWith('image/') && file.url);
-      const attachmentMarkup = preparedAttachments.map(file => {
-        const isImage = (file.mime_type || '').startsWith('image/');
+      const cover = preparedAttachments.find(file => file.is_cover && (file.mime_type || '').startsWith('image/') && file.url)
+        || preparedAttachments.find(file => (file.mime_type || '').startsWith('image/') && file.url);
+      const attachmentMarkup = preparedAttachments.filter(file => !file.is_cover).map(file => {
+        const mime = file.mime_type || '';
+        const isImage = mime.startsWith('image/');
+        const isVideo = mime.startsWith('video/');
+        const typeLabel = isImage ? 'صورة' : (isVideo ? 'فيديو' : 'PDF');
+        const preview = isImage && file.url
+          ? `<img class="attachment-preview" src="${escapeHTML(file.url)}" alt="${escapeHTML(file.file_name || 'صورة مرفقة')}" loading="lazy">`
+          : (isVideo && file.url
+            ? `<video class="attachment-preview" controls preload="metadata"><source src="${escapeHTML(file.url)}" type="${escapeHTML(mime)}">المتصفح لا يدعم تشغيل الفيديو.</video>`
+            : '');
         return `
           <a class="attachment-link" href="${escapeHTML(file.url || '#')}" target="_blank" rel="noopener noreferrer">
-            <span aria-hidden="true">${isImage ? 'صورة' : 'PDF'}</span>
+            <span aria-hidden="true">${typeLabel}</span>
             <span>${escapeHTML(file.file_name || 'مرفق')}</span>
-            ${isImage && file.url ? `<img class="attachment-preview" src="${escapeHTML(file.url)}" alt="${escapeHTML(file.file_name || 'صورة مرفقة')}" loading="lazy">` : ''}
+            ${preview}
           </a>
         `;
       }).join('');
@@ -491,7 +500,7 @@
         <div class="work-extra-fields">
           ${[
             ['الهدف', data.goal],
-            ['الأثر / النتيجة', data.impact],
+            ['الأثر والنتائج', data.impact],
             ['الفئة المستهدفة', data.audience],
             ['الجهة المنفذة', data.entity]
           ].filter(([, value]) => value && String(value).trim()).map(([label, value]) => `
