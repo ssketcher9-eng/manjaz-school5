@@ -795,7 +795,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     if (workIds.length) {
       const { data: attachmentRows, error: attachmentError } = await supabase
         .from('achievement_attachments')
-        .select('achievement_id,file_path,mime_type,created_at')
+        .select('achievement_id,file_path,mime_type,is_cover,created_at')
         .in('achievement_id', workIds)
         .order('created_at', { ascending: true });
 
@@ -804,25 +804,17 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       if (attachmentError) {
         console.warn('تعذر تحميل بيانات مرفقات أغلفة المنجزات:', attachmentError);
       } else {
-        for (const file of (attachmentRows || [])) {
+        const orderedAttachments = [...(attachmentRows || [])].sort((a, b) => Number(Boolean(b.is_cover)) - Number(Boolean(a.is_cover)));
+        for (const file of orderedAttachments) {
           if (!file.mime_type || !file.mime_type.startsWith('image/')) continue;
           if (coverByWork.has(String(file.achievement_id))) continue;
           if (!file.file_path) continue;
-
-          const { data: publicData } = supabase.storage
-            .from('achievement-files')
-            .getPublicUrl(file.file_path);
-
+          const { data: publicData } = supabase.storage.from('achievement-files').getPublicUrl(file.file_path);
           let coverUrl = publicData?.publicUrl || '';
-
-          // احتياطًا إذا لم يكن رابط الملف العام متاحًا.
           if (!coverUrl) {
-            const { data: signedData, error: signedError } = await supabase.storage
-              .from('achievement-files')
-              .createSignedUrl(file.file_path, 3600);
+            const { data: signedData, error: signedError } = await supabase.storage.from('achievement-files').createSignedUrl(file.file_path, 3600);
             if (!signedError) coverUrl = signedData?.signedUrl || '';
           }
-
           if (coverUrl) coverByWork.set(String(file.achievement_id), coverUrl);
         }
       }
@@ -1007,179 +999,152 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
      إضافة منجز
   ========================= */
 
-  const achievementForm =
-    $('#achievementForm');
+  const achievementForm = $('#achievementForm');
+
+  // السماح بإضافة مجموعات متعددة من الوسائط وحذف المجموعة قبل الحفظ.
+  const mediaInputs = $('#mediaInputs');
+  $('#addMediaButton')?.addEventListener('click', () => {
+    if (!mediaInputs) return;
+    const row = document.createElement('div');
+    row.className = 'media-input-row';
+    row.innerHTML = '<input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button>';
+    mediaInputs.appendChild(row);
+  });
+
+  mediaInputs?.addEventListener('click', event => {
+    const removeButton = event.target.closest('.remove-media-button');
+    if (removeButton) removeButton.closest('.media-input-row')?.remove();
+  });
 
   if (achievementForm) {
-    achievementForm.addEventListener(
-      'submit',
-      async e => {
-        e.preventDefault();
+    achievementForm.addEventListener('submit', async event => {
+      event.preventDefault();
 
-        const title =
-          $('#title')?.value.trim();
+      const title = $('#title')?.value.trim();
+      const category = $('#category')?.value;
+      const date = $('#date')?.value || null;
+      const ownerInput = $('#owner')?.value.trim();
+      const description = $('#description')?.value.trim();
+      const goal = $('#goal')?.value.trim() || '';
+      const impact = $('#impact')?.value.trim() || '';
+      const audience = $('#audience')?.value.trim() || '';
+      const entity = $('#entity')?.value.trim() || '';
+      const sectionId = state.targetSection || $('#achievementSection')?.value || 'works';
+      const coverFile = $('#coverImage')?.files?.[0] || null;
+      const files = Array.from(document.querySelectorAll('.achievement-media-input'))
+        .flatMap(input => Array.from(input.files || []));
 
-        const category =
-          $('#category')?.value;
+      if (!title) {
+        alert('اكتبي عنوان المنجز أولًا.');
+        return;
+      }
+      if (!category) {
+        alert('اختاري القسم الذي يتبعه المنجز.');
+        return;
+      }
+      if (!description) {
+        alert('اكتبي وصف المنجز.');
+        return;
+      }
+      if (!coverFile) {
+        alert('صورة غلاف المنجز إلزامية. اختاري صورة قبل الحفظ.');
+        $('#coverImage')?.focus();
+        return;
+      }
 
-        const date =
-          $('#date')?.value || null;
-
-        const ownerInput =
-          $('#owner')?.value.trim();
-
-        const description =
-          $('#description')?.value.trim();
-        const goal = $('#goal')?.value.trim() || '';
-        const impact = $('#impact')?.value.trim() || '';
-        const audience = $('#audience')?.value.trim() || '';
-        const entity = $('#entity')?.value.trim() || '';
-        const sectionId = state.targetSection || $('#achievementSection')?.value || 'works';
-
-        if (!title) {
-          alert(
-            'اكتبي عنوان المنجز أولًا.'
-          );
+      const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      const mediaTypes = [...imageTypes, 'application/pdf', 'video/mp4', 'video/webm', 'video/quicktime'];
+      if (!imageTypes.includes(coverFile.type)) {
+        alert('صورة الغلاف يجب أن تكون صورة بصيغة JPG أو PNG أو WEBP فقط.');
+        return;
+      }
+      if (coverFile.size > 10 * 1024 * 1024) {
+        alert('حجم صورة الغلاف أكبر من 10 MB.');
+        return;
+      }
+      for (const file of files) {
+        if (!mediaTypes.includes(file.type)) {
+          alert(`نوع الملف غير مسموح: ${file.name}`);
           return;
         }
-
-        const owner =
-          ownerInput ||
-          state.profile?.full_name ||
-          state.user?.email ||
-          '';
-
-        const button =
-          achievementForm.querySelector(
-            'button[type="submit"]'
-          );
-
-        if (button) {
-          button.disabled = true;
-          button.textContent =
-            'جارٍ الحفظ...';
-        }
-
-       
-        try {
-          const files = Array.from(
-            $('#attachments')?.files || []
-          );
-
-          const allowedTypes = [
-            'image/jpeg',
-            'image/png',
-            'image/webp',
-            'application/pdf'
-          ];
-
-          for (const file of files) {
-            if (!allowedTypes.includes(file.type)) {
-              throw new Error(
-                `نوع الملف غير مسموح: ${file.name}`
-              );
-            }
-
-            if (file.size > 10 * 1024 * 1024) {
-              throw new Error(
-                `حجم الملف أكبر من 10 MB: ${file.name}`
-              );
-            }
-          }
-
-          if (button) {
-            button.textContent = 'جارٍ حفظ المنجز...';
-          }
-
-          const payload = {
-            title,
-            category,
-            achievement_date: date,
-            submitter_name: owner,
-            description,
-            goal,
-            impact,
-            audience,
-            entity,
-            department: sectionId,
-            created_by: null,
-            status: 'pending'
-          };
-
-          const { data: achievement, error: saveError } =
-            await supabase
-              .from('achievements')
-              .insert(payload)
-              .select()
-              .single();
-
-          if (saveError) throw saveError;
-
-          for (const file of files) {
-            if (button) {
-              button.textContent =
-                `جارٍ رفع المرفقات (${files.indexOf(file) + 1}/${files.length})`;
-            }
-
-            const safeName = file.name.replace(
-              /[^a-zA-Z0-9._-]/g,
-              '_'
-            );
-
-            const filePath =
-              `${'public'}/${achievement.id}/${crypto.randomUUID()}-${safeName}`;
-
-            const { error: uploadError } =
-              await supabase.storage
-                .from('achievement-files')
-                .upload(filePath, file, {
-                  contentType: file.type,
-                  upsert: false
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { error: metadataError } =
-              await supabase
-                .from('achievement_attachments')
-                .insert({
-                  achievement_id: achievement.id,
-                  file_name: file.name,
-                  file_path: filePath,
-                  mime_type: file.type,
-                  uploaded_by: null
-                });
-
-            if (metadataError) throw metadataError;
-          }
-
-          achievementForm.reset();
-          const sectionInput = $('#achievementSection');
-          if (sectionInput) sectionInput.value = 'works';
-          state.targetSection = 'works';
-
-          await loadWorks();
-
-          goToPage(sectionId);
-
-          alert(
-            'تم نشر المنجز وإرفاق الملفات بنجاح.'
-          );
-        } catch (error) {
-          console.error(error);
-
-          alert(
-            error.message ||
-            'تعذر حفظ المنجز أو رفع المرفقات.'
-          );
-         } finally {
-          if (button) {
-            button.disabled = false;
-            button.textContent = 'حفظ المنجز';
-          }
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`حجم الملف أكبر من 10 MB: ${file.name}`);
+          return;
         }
       }
-    );
+
+      const owner = ownerInput || state.profile?.full_name || state.user?.email || '';
+      const button = achievementForm.querySelector('button[type="submit"]');
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'جارٍ الحفظ...';
+      }
+
+      try {
+        const payload = {
+          title, category, achievement_date: date, submitter_name: owner,
+          description, goal, impact, audience, entity, department: sectionId,
+          created_by: null, status: 'pending'
+        };
+
+        const { data: achievement, error: saveError } = await supabase
+          .from('achievements')
+          .insert(payload)
+          .select()
+          .single();
+        if (saveError) throw saveError;
+
+        const uploadAndRegister = async (file, isCover, position, total) => {
+          if (button) button.textContent = isCover
+            ? 'جارٍ رفع صورة الغلاف...'
+            : `جارٍ رفع الوسائط (${position}/${total})`;
+
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const filePath = `public/${achievement.id}/${crypto.randomUUID()}-${safeName}`;
+          const { error: uploadError } = await supabase.storage
+            .from('achievement-files')
+            .upload(filePath, file, { contentType: file.type, upsert: false });
+          if (uploadError) throw uploadError;
+
+          const { error: metadataError } = await supabase
+            .from('achievement_attachments')
+            .insert({
+              achievement_id: achievement.id,
+              file_name: file.name,
+              file_path: filePath,
+              mime_type: file.type,
+              uploaded_by: null,
+              is_cover: isCover
+            });
+          if (metadataError) throw metadataError;
+        };
+
+        await uploadAndRegister(coverFile, true, 1, files.length);
+        for (let i = 0; i < files.length; i++) {
+          await uploadAndRegister(files[i], false, i + 1, files.length);
+        }
+
+        achievementForm.reset();
+        if (mediaInputs) {
+          mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
+        }
+        const sectionInput = $('#achievementSection');
+        if (sectionInput) sectionInput.value = 'works';
+        state.targetSection = 'works';
+
+        await loadWorks();
+        goToPage(sectionId);
+        alert('تم حفظ المنجز وصورة غلافه والوسائط الإضافية بنجاح، وهو الآن قيد المراجعة.');
+      } catch (error) {
+        console.error(error);
+        alert(error.message || 'تعذر حفظ المنجز أو رفع المرفقات.');
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'حفظ المنجز';
+        }
+      }
+    });
   }
   /* =========================
      حذف المنجز للمديرة
