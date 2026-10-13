@@ -72,7 +72,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     mission: '',
     students: '',
     education_type: 'عام',
-    founded: '1428هـ'
+    founded: '1428هـ',
+    staff: []
   };
 
   function renderAboutSettings() {
@@ -89,6 +90,13 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     $('#aboutStudentsStat').textContent = aboutSettings.students !== '' && aboutSettings.students != null ? aboutSettings.students : '—';
     $('#aboutEducationStat').textContent = aboutSettings.education_type || '—';
     $('#aboutFoundedStat').textContent = aboutSettings.founded || '—';
+    const staffGrid = $('#aboutStaffGrid');
+    if (staffGrid) {
+      const staff = Array.isArray(aboutSettings.staff) ? aboutSettings.staff : [];
+      staffGrid.innerHTML = staff.length
+        ? staff.map(item => `<article class="about-staff-item"><span>${escapeHTML(item.title)}</span><strong>${escapeHTML(item.count || '—')}</strong></article>`).join('')
+        : '<p>لم تُضف بيانات الكادر المدرسي والإداري بعد.</p>';
+    }
 
     if (state.role === 'admin') {
       $('#aboutVisionInput').value = aboutSettings.vision || '';
@@ -96,6 +104,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       $('#aboutStudentsInput').value = aboutSettings.students ?? '';
       $('#aboutEducationInput').value = aboutSettings.education_type || '';
       $('#aboutFoundedInput').value = aboutSettings.founded || '';
+      $('#aboutStaffInput').value = (Array.isArray(aboutSettings.staff) ? aboutSettings.staff : []).map(item => `${item.title} | ${item.count || ''}`).join('\n');
     }
   }
 
@@ -152,7 +161,11 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
           mission: $('#aboutMissionInput').value.trim(),
           students: $('#aboutStudentsInput').value.trim(),
           education_type: $('#aboutEducationInput').value.trim(),
-          founded: $('#aboutFoundedInput').value.trim()
+          founded: $('#aboutFoundedInput').value.trim(),
+          staff: $('#aboutStaffInput').value.split('\n').map(line => {
+            const [title, count = ''] = line.split('|');
+            return { title: (title || '').trim(), count: count.trim() };
+          }).filter(item => item.title)
         };
         const { error: saveError } = await supabase
           .from('site_settings')
