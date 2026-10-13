@@ -1300,6 +1300,46 @@ $('#allWorks')?.addEventListener(
     document.body.classList.add('details-modal-open');
   }
 );
+  // تفعيل بطاقات الأقسام بنفس نافذة تفاصيل المنجزات في صفحة الاستعراض.
+  document.addEventListener('click', event => {
+    const card = event.target.closest('[data-section-work-id]');
+    if (!card) return;
+    if (event.target.closest('button, a')) {
+      if (event.target.closest('[data-section-open]')) {
+        event.preventDefault();
+      } else {
+        return;
+      }
+    }
+    const workId = card.dataset.sectionWorkId;
+    if (!workId) return;
+
+    let modal = document.getElementById('workDetailsModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'workDetailsModal';
+      modal.className = 'work-details-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-label', 'تفاصيل المنجز');
+      modal.innerHTML = '<div class="work-details-modal-panel"><button class="work-details-modal-close" type="button" aria-label="إغلاق">×</button><iframe class="work-details-modal-frame" title="تفاصيل المنجز"></iframe></div>';
+      document.body.appendChild(modal);
+      const close = () => {
+        modal.classList.remove('is-open');
+        document.body.classList.remove('details-modal-open');
+        modal.querySelector('iframe').src = 'about:blank';
+      };
+      modal.querySelector('.work-details-modal-close').addEventListener('click', close);
+      modal.addEventListener('click', e => { if (e.target === modal) close(); });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) close();
+      });
+    }
+    modal.querySelector('iframe').src = 'work.html?id=' + encodeURIComponent(workId);
+    modal.classList.add('is-open');
+    document.body.classList.add('details-modal-open');
+  });
+
   /* =========================
      لوحة الإدارة
   ========================= */
