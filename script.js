@@ -35,6 +35,37 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       .replace(/'/g, '&#039;');
   }
 
+  // تصغير صور المنجز قبل رفعها لتسريع ظهورها على البطاقات.
+  async function optimizeAchievementImage(file) {
+    if (!file || !file.type?.startsWith('image/')) return file;
+    try {
+      const bitmap = await createImageBitmap(file);
+      const maxSide = 1400;
+      const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+      if (scale === 1 && file.size < 350 * 1024) {
+        bitmap.close?.();
+        return file;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      const context = canvas.getContext('2d', { alpha: false });
+      if (!context) {
+        bitmap.close?.();
+        return file;
+      }
+      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close?.();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.82));
+      if (!blob || blob.size >= file.size) return file;
+      const baseName = file.name.replace(/\.[^.]+$/, '') || 'achievement-cover';
+      return new File([blob], baseName + '.webp', { type: 'image/webp', lastModified: Date.now() });
+    } catch (error) {
+      console.warn('تعذر تحسين الصورة، سيتم رفع الأصل:', error);
+      return file;
+    }
+  }
+
   function statusLabel(status) {
     const labels = { published: 'معتمد', approved: 'معتمد', pending: 'قيد المراجعة', under_review: 'قيد المراجعة', needs_edit: 'بحاجة إلى تعديل', rejected: 'غير معتمد' };
     return labels[status] || status || 'قيد المراجعة';
@@ -1094,11 +1125,12 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
           .single();
         if (saveError) throw saveError;
 
-        const uploadAndRegister = async (file, isCover, position, total) => {
+        const uploadAndRegister = async (originalFile, isCover, position, total) => {
           if (button) button.textContent = isCover
-            ? 'جارٍ رفع صورة الغلاف...'
+            ? 'جارٍ تحسين ورفع صورة الغلاف...'
             : `جارٍ رفع الوسائط (${position}/${total})`;
 
+          const file = await optimizeAchievementImage(originalFile);
           const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
           const filePath = `public/${achievement.id}/${crypto.randomUUID()}-${safeName}`;
           const { error: uploadError } = await supabase.storage
@@ -1110,7 +1142,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             .from('achievement_attachments')
             .insert({
               achievement_id: achievement.id,
-              file_name: file.name,
+              file_name: originalFile.name,
               file_path: filePath,
               mime_type: file.type,
               uploaded_by: state.user?.id ?? null,
