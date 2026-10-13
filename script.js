@@ -876,6 +876,11 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
     const filtered =
       state.works.filter(work => {
+        // لا تظهر المنجزات قيد المراجعة في الاستعراض العام؛ الإدارة ترى الجميع.
+        if (state.role !== 'admin' && !['published', 'approved'].includes(work.status)) {
+          return false;
+        }
+
         const searchable =
           `${work.title || ''}
            ${work.submitter_name || work.owner || ''}
