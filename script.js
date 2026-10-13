@@ -16,7 +16,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     user: null,
     role: 'guest',
     profile: null,
-    works: []
+    works: [],
+    targetSection: 'works'
   };
 
   /* =========================
@@ -50,8 +51,10 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     if (!button) return;
     event.preventDefault();
     const category = button.dataset.sectionAdd;
+    const sectionId = button.dataset.sectionId || 'works';
+    state.targetSection = sectionId;
     const sectionInput = $('#achievementSection');
-    if (sectionInput) sectionInput.value = button.dataset.sectionId || 'works';
+    if (sectionInput) sectionInput.value = sectionId;
     const categoryInput = $('#category');
     if (categoryInput) categoryInput.value = category;
     goToPage('add');
@@ -1036,7 +1039,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         const impact = $('#impact')?.value.trim() || '';
         const audience = $('#audience')?.value.trim() || '';
         const entity = $('#entity')?.value.trim() || '';
-        const sectionId = $('#achievementSection')?.value || 'works';
+        const sectionId = state.targetSection || $('#achievementSection')?.value || 'works';
 
         if (!title) {
           alert(
@@ -1157,7 +1160,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
           achievementForm.reset();
           const sectionInput = $('#achievementSection');
-          if (sectionInput) sectionInput.value = sectionId;
+          if (sectionInput) sectionInput.value = 'works';
+          state.targetSection = 'works';
 
           await loadWorks();
 
