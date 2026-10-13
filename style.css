@@ -191,3 +191,16 @@ body.details-modal-open{overflow:hidden}
 .section-add-btn{white-space:nowrap}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 @media(max-width:640px){.section-work-cards{grid-template-columns:1fr}.section-achievement-card .card-image-wrap{height:200px}.section-head{align-items:flex-start}}
+
+
+/* نموذج إضافة المنجز: فصل صورة الغلاف عن بقية الوسائط */
+.media-upload-section{margin:24px 0;padding:18px;border:1px solid var(--line);border-radius:14px;background:#fbfdfd}
+.media-upload-section h3{margin:0 0 8px;color:var(--nav);font-size:17px}
+.media-upload-section p,.media-upload-section small{display:block;color:var(--muted);font-size:13px;line-height:1.8;margin:0 0 12px}
+.cover-upload-label{display:block;padding:14px;border:1px dashed #8bb8b5;border-radius:10px;background:#fff}
+.media-input-row{display:flex;align-items:center;gap:10px;margin:10px 0}
+.media-input-row input{min-width:0;flex:1}
+.secondary{display:inline-block;background:#eef4f4;color:var(--nav);border:1px solid #cbdcdd;padding:10px 14px;border-radius:10px;cursor:pointer;font:inherit;font-weight:700}
+.remove-media-button{white-space:nowrap}
+#addMediaButton{margin:6px 0 12px}
+@media(max-width:560px){.media-input-row{align-items:stretch;flex-direction:column}.media-input-row .secondary{width:100%}}
