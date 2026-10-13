@@ -66,6 +66,116 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     }
   }
 
+  let aboutSettings = {
+    banner_url: '',
+    vision: '',
+    mission: '',
+    students: '',
+    education_type: 'عام',
+    founded: '1428هـ'
+  };
+
+  function renderAboutSettings() {
+    const banner = $('#aboutBanner');
+    const bannerImage = $('#aboutBannerImage');
+    if (aboutSettings.banner_url && banner && bannerImage) {
+      bannerImage.src = aboutSettings.banner_url;
+      banner.hidden = false;
+    } else if (banner) {
+      banner.hidden = true;
+    }
+    $('#aboutVisionText').textContent = aboutSettings.vision || 'لم تُضف الرؤية بعد.';
+    $('#aboutMissionText').textContent = aboutSettings.mission || 'لم تُضف الرسالة بعد.';
+    $('#aboutStudentsStat').textContent = aboutSettings.students !== '' && aboutSettings.students != null ? aboutSettings.students : '—';
+    $('#aboutEducationStat').textContent = aboutSettings.education_type || '—';
+    $('#aboutFoundedStat').textContent = aboutSettings.founded || '—';
+
+    if (state.role === 'admin') {
+      $('#aboutVisionInput').value = aboutSettings.vision || '';
+      $('#aboutMissionInput').value = aboutSettings.mission || '';
+      $('#aboutStudentsInput').value = aboutSettings.students ?? '';
+      $('#aboutEducationInput').value = aboutSettings.education_type || '';
+      $('#aboutFoundedInput').value = aboutSettings.founded || '';
+    }
+  }
+
+  async function loadAboutSettings() {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'about_page')
+      .maybeSingle();
+
+    if (error) {
+      console.warn('تعذر تحميل إعدادات صفحة عن المدرسة:', error);
+    } else if (data?.value && typeof data.value === 'object') {
+      aboutSettings = { ...aboutSettings, ...data.value };
+    }
+    renderAboutSettings();
+  }
+
+  const aboutSettingsForm = $('#aboutSettingsForm');
+  if (aboutSettingsForm) {
+    aboutSettingsForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (state.role !== 'admin') {
+        alert('هذه الإعدادات متاحة للمديرة فقط.');
+        return;
+      }
+      const button = $('#saveAboutSettings');
+      const message = $('#aboutSettingsMessage');
+      button.disabled = true;
+      message.textContent = 'جارٍ الحفظ...';
+      try {
+        const file = $('#aboutBannerFile').files?.[0];
+        let bannerUrl = aboutSettings.banner_url || '';
+        if (file) {
+          if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            throw new Error('اختاري صورة JPG أو PNG أو WebP.');
+          }
+          if (file.size > 10 * 1024 * 1024) {
+            throw new Error('حجم صورة البنر يتجاوز 10 ميجابايت.');
+          }
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const path = `about/banner/${crypto.randomUUID()}-${safeName}`;
+          const { error: uploadError } = await supabase.storage
+            .from('school-assets')
+            .upload(path, file, { contentType: file.type, upsert: false });
+          if (uploadError) throw uploadError;
+          const { data: publicUrlData } = supabase.storage.from('school-assets').getPublicUrl(path);
+          bannerUrl = publicUrlData?.publicUrl || '';
+        }
+
+        const nextSettings = {
+          banner_url: bannerUrl,
+          vision: $('#aboutVisionInput').value.trim(),
+          mission: $('#aboutMissionInput').value.trim(),
+          students: $('#aboutStudentsInput').value.trim(),
+          education_type: $('#aboutEducationInput').value.trim(),
+          founded: $('#aboutFoundedInput').value.trim()
+        };
+        const { error: saveError } = await supabase
+          .from('site_settings')
+          .upsert({
+            key: 'about_page',
+            value: nextSettings,
+            updated_by: state.user.id,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'key' });
+        if (saveError) throw saveError;
+        aboutSettings = nextSettings;
+        renderAboutSettings();
+        $('#aboutBannerFile').value = '';
+        message.textContent = 'تم حفظ بيانات صفحة عن المدرسة.';
+      } catch (error) {
+        console.error(error);
+        message.textContent = error.message || 'تعذر حفظ الإعدادات.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
   function statusLabel(status) {
     const labels = { published: 'معتمد', approved: 'معتمد', pending: 'قيد المراجعة', under_review: 'قيد المراجعة', needs_edit: 'بحاجة إلى تعديل', rejected: 'غير معتمد' };
     return labels[status] || status || 'قيد المراجعة';
@@ -146,7 +256,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
   function showPage(id) {
     const allowedAdminPage =
-      (id === 'admin' || id === 'settings') &&
+      (id === 'admin' || id === 'dashboard' || id === 'settings') &&
       state.role !== 'admin';
 
     if (allowedAdminPage) {
@@ -189,7 +299,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       const id = link.getAttribute('href').slice(1);
 
       if (
-        (id === 'admin' || id === 'settings') &&
+        (id === 'admin' || id === 'dashboard' || id === 'settings') &&
         state.role !== 'admin'
       ) {
         e.preventDefault();
@@ -1487,6 +1597,7 @@ $('#allWorks')?.addEventListener(
 
   await loadCurrentUser();
   await loadWorks();
+  await loadAboutSettings();
 
   showPage(
     location.hash.slice(1) || 'home'
