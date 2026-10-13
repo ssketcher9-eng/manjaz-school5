@@ -1260,7 +1260,7 @@ $('#allWorks')?.addEventListener(
     }
 
     detailsModal.querySelector('iframe').src =
-      `work.html?id=${encodeURIComponent(workId)}`;
+      `work.html?id=${encodeURIComponent(workId)}&v=20261014-1`;
     detailsModal.classList.add('is-open');
     document.body.classList.add('details-modal-open');
   }
@@ -1300,7 +1300,7 @@ $('#allWorks')?.addEventListener(
         if (e.key === 'Escape' && modal.classList.contains('is-open')) close();
       });
     }
-    modal.querySelector('iframe').src = 'work.html?id=' + encodeURIComponent(workId);
+    modal.querySelector('iframe').src = 'work.html?id=' + encodeURIComponent(workId) + '&v=20261014-1';
     modal.classList.add('is-open');
     document.body.classList.add('details-modal-open');
   });
