@@ -44,6 +44,10 @@
     <article class="about-text-card"><h3>رؤيتنا</h3><p id="aboutVisionText">سيتم عرض رؤية المدرسة هنا.</p></article>
     <article class="about-text-card"><h3>رسالتنا</h3><p id="aboutMissionText">سيتم عرض رسالة المدرسة هنا.</p></article>
   </div>
+  <section class="about-staff-section">
+    <h3>الكادر المدرسي والإداري</h3>
+    <div id="aboutStaffGrid" class="about-staff-grid"><p>لم تُضف بيانات الكادر بعد.</p></div>
+  </section>
   <div class="about-stats-grid">
     <article class="about-stat-card"><span>إجمالي الطالبات</span><strong id="aboutStudentsStat">—</strong></article>
     <article class="about-stat-card"><span>نوع التعليم</span><strong id="aboutEducationStat">—</strong></article>
@@ -75,12 +79,14 @@
         <label>نوع التعليم<input id="aboutEducationInput" placeholder="مثال: عام"></label>
         <label>تاريخ التأسيس<input id="aboutFoundedInput" placeholder="مثال: 1428هـ"></label>
       </div>
+      <label>الكادر المدرسي والإداري <textarea id="aboutStaffInput" rows="8" placeholder="كل سطر: المسمى الوظيفي | العدد\nمثال: مديرة المدرسة | 1\nمعلمات | 44\nمساعدات إداريات | 15"></textarea></label>
+      <small>اكتبي كل فئة في سطر مستقل، واستخدمي علامة | بين المسمى والعدد.</small>
       <button class="primary" type="submit" id="saveAboutSettings">حفظ بيانات صفحة عن المدرسة</button>
       <p id="aboutSettingsMessage" role="status"></p>
     </form>
   </div>
 </section><section id="settings" class="page"><h2>الإعدادات</h2><div class="panel"><label>اسم المدرسة<input value="الثانوية الخامسة بمكة المكرمة"></label><label>الشعار<input type="file" accept="image/*"></label></div></section>
 </main></div>
-<script src="script.js?v=20261014-5"></script><script src="workshops.js"></script>
+<script src="script.js?v=20261014-6"></script><script src="workshops.js"></script>
 </body>
 </html>
