@@ -1100,7 +1100,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             entity,
             department: sectionId,
             created_by: null,
-            status: 'published'
+            status: 'pending'
           };
 
           const { data: achievement, error: saveError } =
