@@ -204,3 +204,24 @@ body.details-modal-open{overflow:hidden}
 .remove-media-button{white-space:nowrap}
 #addMediaButton{margin:6px 0 12px}
 @media(max-width:560px){.media-input-row{align-items:stretch;flex-direction:column}.media-input-row .secondary{width:100%}}
+
+
+/* صفحة عن المدرسة وإعداداتها */
+.about-banner{width:100%;height:clamp(180px,28vw,320px);overflow:hidden;border-radius:18px;margin:18px 0 22px;background:#e8eff0;border:1px solid var(--line)}
+.about-banner[hidden]{display:none}
+.about-banner img{display:block;width:100%;height:100%;object-fit:cover}
+.about-identity{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin:18px 0}
+.about-identity h3{margin:0;font-size:23px}
+.about-vision-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:18px 0}
+.about-text-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;min-height:140px;box-shadow:0 3px 12px #123e5508}
+.about-text-card h3{margin:0 0 12px;color:var(--teal);font-size:20px}
+.about-text-card p{margin:0;line-height:1.9;white-space:pre-wrap}
+.about-stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:22px 0}
+.about-stat-card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px;text-align:right;min-width:0}
+.about-stat-card span{display:block;color:var(--muted);font-size:13px;margin-bottom:8px}
+.about-stat-card strong{display:block;font-size:26px;color:var(--text);overflow-wrap:anywhere}
+.dashboard-about-panel{max-width:900px}
+.dashboard-about-panel form{display:grid;gap:15px}
+.dashboard-about-panel small{color:var(--muted);line-height:1.7}
+#aboutSettingsMessage{margin:0;min-height:1.5em;color:var(--teal);font-weight:700}
+@media(max-width:700px){.about-vision-grid{grid-template-columns:1fr}.about-stats-grid{grid-template-columns:1fr}.about-stat-card{padding:16px}.about-stat-card strong{font-size:23px}}
