@@ -1084,7 +1084,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         const payload = {
           title, category, achievement_date: date, submitter_name: owner,
           description, goal, impact, audience, entity, department: sectionId,
-          created_by: null, status: 'pending'
+          created_by: state.user?.id ?? null, status: 'pending'
         };
 
         const { data: achievement, error: saveError } = await supabase
