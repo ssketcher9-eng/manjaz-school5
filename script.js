@@ -199,6 +199,36 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     return 'status-pending';
   }
 
+  const categorySectionMap = {
+    'منجز': 'works',
+    'تدريس': 'lessons',
+    'توجيه طلابي': 'guidance',
+    'نشاط طلابي': 'awards',
+    'شراكة': 'partners',
+    'نواتج تعلم': 'reports',
+    'قيم': 'identity',
+    'أولياء الأمور': 'family',
+    'ورش': 'workshops',
+    'ورشة تدريبية': 'workshops'
+  };
+
+  function categoryToSection(category) {
+    return categorySectionMap[String(category || '').trim()] || '';
+  }
+
+  // اربط المجال بالقسم تلقائيًا حتى لا تُحفظ المجالات المختلفة تحت قسم المنجزات.
+  const categoryInputForSection = $('#category');
+  const sectionInputForCategory = $('#achievementSection');
+  if (categoryInputForSection && sectionInputForCategory) {
+    categoryInputForSection.addEventListener('change', () => {
+      const mappedSection = categoryToSection(categoryInputForSection.value);
+      if (mappedSection) {
+        sectionInputForCategory.value = mappedSection;
+        state.targetSection = mappedSection;
+      }
+    });
+  }
+
   // فتح نموذج الإضافة من القسم مع تحديد مجاله مسبقًا.
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-section-add]');
@@ -211,6 +241,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     if (sectionInput) sectionInput.value = sectionId;
     const categoryInput = $('#category');
     if (categoryInput) categoryInput.value = category;
+    if (sectionInput) sectionInput.value = sectionId || categoryToSection(category) || 'works';
     goToPage('add');
   });
 
@@ -219,7 +250,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   ========================= */
 
   const sections = [
-    ['منجزات نوعية مستدامة', '▤', '#works', '#add', 'إضافة'],
+    ['منجزات نوعية مستدامة', '▤', '#works', '#add', 'إضافة', null, 'منجز'],
     ['ورش تدريبية تطويرية', '▧', '#workshops', '#workshops', 'إضافة', 'workshops'],
     ['تعليم متميز وتعلم فاعل', '▣', '#lessons', '#lessons', 'إضافة', null, 'تدريس'],
     ['نشاط طلابي متميز', '◇', '#awards', '#awards', 'إضافة', null, 'نشاط طلابي'],
@@ -988,7 +1019,10 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       const category = container.dataset.sectionCards;
       const sectionId = container.dataset.sectionId || '';
       // اعرض المنجزات المعتمدة وقيد المراجعة داخل القسم، مع إظهار الحالة على البطاقة.
-      const items = state.works.filter(work => work.department === sectionId);
+      const items = state.works.filter(work => {
+        const categorySection = categoryToSection(work.category);
+        return (categorySection || work.department) === sectionId;
+      });
       if (!items.length) {
         container.innerHTML = '<div class="empty">لا توجد منجزات في هذا القسم حتى الآن.</div>';
         return;
