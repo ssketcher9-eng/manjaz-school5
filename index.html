@@ -36,7 +36,20 @@
   <h1 class="section-title">الأقسام</h1>
   <div class="home-sections" id="homeSections"></div>
 </section>
-<section id="about" class="page"><h2>عن المدرسة</h2><div class="panel"><h3>الثانوية الخامسة بمكة المكرمة</h3><p>هذه المساحة مخصصة لنبذة المدرسة ورسالتها ورؤيتها.</p></div></section>
+<section id="about" class="page">
+  <h2>عن المدرسة</h2>
+  <div id="aboutBanner" class="about-banner" hidden><img id="aboutBannerImage" alt="بنر المدرسة"></div>
+  <div class="about-identity"><h3>الثانوية الخامسة بمكة المكرمة</h3></div>
+  <div class="about-vision-grid">
+    <article class="about-text-card"><h3>رؤيتنا</h3><p id="aboutVisionText">سيتم عرض رؤية المدرسة هنا.</p></article>
+    <article class="about-text-card"><h3>رسالتنا</h3><p id="aboutMissionText">سيتم عرض رسالة المدرسة هنا.</p></article>
+  </div>
+  <div class="about-stats-grid">
+    <article class="about-stat-card"><span>إجمالي الطالبات</span><strong id="aboutStudentsStat">—</strong></article>
+    <article class="about-stat-card"><span>نوع التعليم</span><strong id="aboutEducationStat">—</strong></article>
+    <article class="about-stat-card"><span>تاريخ التأسيس</span><strong id="aboutFoundedStat">—</strong></article>
+  </div>
+</section>
 <section id="add" class="page"><h2>إضافة منجز جديد</h2><div class="panel"><form id="achievementForm"><input id="achievementSection" type="hidden" value="works"><div class="grid"><label>عنوان المنجز *<input id="title" required></label><label>القسم / المجال *<select id="category" required><option value="">اختاري المجال</option><option value="تدريس">تدريس</option><option value="توجيه طلابي">توجيه طلابي</option><option value="نشاط طلابي">نشاط طلابي</option><option value="شراكة">شراكة</option><option value="منجز">منجز</option><option value="نواتج تعلم">نواتج تعلم</option><option value="قيم">قيم</option><option value="ورش">ورش</option><option value="أولياء الأمور">أولياء أمور</option></select></label><label>تاريخ التنفيذ<input id="date" type="date"></label><label>اسم المنفذ<input id="owner"></label></div><label>وصف المنجز *<textarea id="description" rows="5" required></textarea></label><div class="grid"><label>الهدف من المنجز<textarea id="goal" rows="3" placeholder="ما الهدف من تنفيذ المنجز؟"></textarea></label><label>الأثر والنتائج<textarea id="impact" rows="3" placeholder="ما الأثر أو النتائج المتحققة؟"></textarea></label><label>الفئة المستهدفة<input id="audience" placeholder="مثال: الطالبات، المعلمات"></label><label>الجهة المنفذة<input id="entity" placeholder="القسم أو الفريق المنفذ"></label></div><section class="media-upload-section"><h3>صورة غلاف المنجز *</h3><p>صورة إلزامية تظهر على بطاقة المنجز في الموقع. يقبل هذا الحقل الصور فقط.</p><label class="cover-upload-label">اختيار صورة الغلاف<input id="coverImage" type="file" accept="image/jpeg,image/png,image/webp" required></label><small>الصيغ المقبولة: JPG وPNG وWEBP، بحد أقصى 10 MB.</small></section><section class="media-upload-section"><h3>المزيد من الوسائط (اختياري)</h3><p>أضيفي صورًا إضافية أو فيديوهات أو ملفات PDF. يمكنك إضافة أكثر من مجموعة من الملفات.</p><div id="mediaInputs"><div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div></div><button class="secondary" id="addMediaButton" type="button">＋ إضافة المزيد من الوسائط</button><small>الصيغ المقبولة: JPG وPNG وWEBP وPDF وMP4 وWEBM وMOV. الحد الأقصى 10 MB لكل ملف.</small></section><button class="primary" type="submit">حفظ المنجز</button></form></div></section><section id="works" class="page"><div class="section-head"><div><h2>منجزات نوعية مستدامة</h2><p>ابحثي وصنفي المنجزات المسجلة</p></div></div><div class="toolbar"><input id="search" placeholder="ابحث في المنجزات..."><select id="filter"><option value="all">كل المجالات</option><option>تدريس</option><option>توجيه طلابي</option><option>نشاط طلابي</option><option>شراكة</option><option>منجز</option><option>نواتج تعلم</option><option>قيم</option><option>ورش</option><option>أولياء الأمور</option></select></div><div id="allWorks" class="cards"></div></section>
 <section id="admin" class="page"><h2>لوحة الإدارة</h2><div class="stats"><div><strong id="totalCount">0</strong><span>إجمالي المنجزات</span></div><div><strong id="publishedCount">0</strong><span>معتمدة</span></div><div><strong id="pendingCount">0</strong><span>قيد المراجعة</span></div></div></section>
 <section id="reports" class="page"><div class="section-head"><div><h2>نتائج التعلم نحو التميز والإتقان</h2><p>منجزات نتائج التعلم الخاصة بهذا القسم</p></div><button class="primary section-add-btn" data-section-add="نواتج تعلم" data-section-id="reports" type="button">＋ إضافة</button></div><div class="section-work-cards" data-section-cards="نواتج تعلم" data-section-id="reports"></div><div class="panel"><div class="bar"><i style="height:75%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:64%"></i><i style="height:42%"></i><i style="height:70%"></i></div></div></section>
@@ -47,8 +60,27 @@
 <section id="guidance" class="page"><div class="section-head"><div><h2>رعاية وتوجيه طلابي متميز</h2><p>المنجزات المرتبطة بالتوجيه والرعاية الطلابية</p></div><button class="primary section-add-btn" data-section-add="توجيه طلابي" data-section-id="guidance" type="button">＋ إضافة</button></div><div class="section-work-cards" data-section-cards="توجيه طلابي" data-section-id="guidance"></div></section>
 <section id="identity" class="page"><div class="section-head"><div><h2>هوية وطنية راسخة</h2><p>المنجزات المرتبطة بالقيم والهوية الوطنية</p></div><button class="primary section-add-btn" data-section-add="قيم" data-section-id="identity" type="button">＋ إضافة</button></div><div class="section-work-cards" data-section-cards="قيم" data-section-id="identity"></div></section>
 <section id="family" class="page"><div class="section-head"><div><h2>تواصل أسري فعال</h2><p>المنجزات والمبادرات المرتبطة بأولياء الأمور</p></div><button class="primary section-add-btn" data-section-add="أولياء الأمور" data-section-id="family" type="button">＋ إضافة</button></div><div class="section-work-cards" data-section-cards="أولياء الأمور" data-section-id="family"></div></section>
-<section id="dashboard" class="page"><h2>لوحة التحكم</h2><div class="panel"><p>لوحة التحكم مخصصة لإدارة إعدادات الموقع ومحتواه.</p><p>لم تُنقل وظائف الإدارة إلى هذه الصفحة في هذا التعديل.</p></div></section><section id="settings" class="page"><h2>الإعدادات</h2><div class="panel"><label>اسم المدرسة<input value="الثانوية الخامسة بمكة المكرمة"></label><label>الشعار<input type="file" accept="image/*"></label></div></section>
+<section id="dashboard" class="page">
+  <h2>لوحة التحكم</h2>
+  <div class="panel dashboard-about-panel">
+    <h3>إعدادات صفحة «عن المدرسة»</h3>
+    <p>تعديل بنر المدرسة والرؤية والرسالة والإحصائيات التي تظهر للزوار.</p>
+    <form id="aboutSettingsForm">
+      <label>صورة بنر المدرسة<input id="aboutBannerFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <small>الصيغ المقبولة JPG وPNG وWebP، الحد الأقصى 10 ميجابايت. اتركي الحقل فارغًا للاحتفاظ بالبنر الحالي.</small>
+      <label>الرؤية<textarea id="aboutVisionInput" rows="3" placeholder="اكتبي رؤية المدرسة"></textarea></label>
+      <label>الرسالة<textarea id="aboutMissionInput" rows="3" placeholder="اكتبي رسالة المدرسة"></textarea></label>
+      <div class="grid">
+        <label>إجمالي الطالبات<input id="aboutStudentsInput" type="number" min="0" placeholder="عدد الطالبات"></label>
+        <label>نوع التعليم<input id="aboutEducationInput" placeholder="مثال: عام"></label>
+        <label>تاريخ التأسيس<input id="aboutFoundedInput" placeholder="مثال: 1428هـ"></label>
+      </div>
+      <button class="primary" type="submit" id="saveAboutSettings">حفظ بيانات صفحة عن المدرسة</button>
+      <p id="aboutSettingsMessage" role="status"></p>
+    </form>
+  </div>
+</section><section id="settings" class="page"><h2>الإعدادات</h2><div class="panel"><label>اسم المدرسة<input value="الثانوية الخامسة بمكة المكرمة"></label><label>الشعار<input type="file" accept="image/*"></label></div></section>
 </main></div>
-<script src="script.js?v=20261014-4"></script><script src="workshops.js"></script>
+<script src="script.js?v=20261014-5"></script><script src="workshops.js"></script>
 </body>
 </html>
