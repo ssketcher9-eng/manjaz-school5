@@ -452,7 +452,7 @@
 
       const cover = preparedAttachments.find(file => file.is_cover && (file.mime_type || '').startsWith('image/') && file.url)
         || preparedAttachments.find(file => (file.mime_type || '').startsWith('image/') && file.url);
-      const attachmentMarkup = preparedAttachments.filter(file => !file.is_cover).map(file => {
+      const attachmentMarkup = preparedAttachments.filter(file => !file.is_cover && file !== cover).map(file => {
         const mime = file.mime_type || '';
         const isImage = mime.startsWith('image/');
         const isVideo = mime.startsWith('video/');
