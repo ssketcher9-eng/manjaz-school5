@@ -97,7 +97,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   function renderAboutSettings() {
     const logo = document.querySelector('.school-logo');
     if (logo) {
-      if (aboutSettings.logo_url) logo.innerHTML = `<img src="${escapeHTML(aboutSettings.logo_url)}" alt="شعار المدرسة">`;
+      if (aboutSettings.logo_url) logo.innerHTML = `<img src="${escapeHTML(aboutSettings.logo_url)}" alt="شعار المدرسة" style="width:100%;height:100%;object-fit:contain;border-radius:inherit">`;
       else logo.textContent = 'شعار';
     }
     const banner = $('#aboutBanner');
