@@ -70,20 +70,20 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     banner_url: '',
     banner_background_url: '',
     banner_portrait_url: '',
-    banner_title: 'منجزات تصنع المستقبل',
-    banner_kicker: 'الثانوية الخامسة بمكة المكرمة',
-    banner_subtitle: 'نحو تعليم متميز، وبيئة محفزة، وأثر مستدام.',
-    banner_date: 'عام دراسي متميز',
-    banner_time: 'تعلم وإبداع',
+    banner_title: 'الثانوية الخامسة بمكة المكرمة',
+    banner_kicker: 'عن مدرستي | بوابة منجز',
+    banner_subtitle: 'نحتفي بمنجزات طالباتنا ومعلماتنا، ونوثّق أثر التعليم والإبداع والشراكة المجتمعية.',
+    banner_date: 'عام دراسي حافل بالإنجاز',
+    banner_time: 'تعليم متميز وتعلّم فاعل',
     banner_location: 'مكة المكرمة',
-    banner_primary_text: 'استعرضي المنجزات',
+    banner_primary_text: 'استعرضي منجزات المدرسة',
     banner_primary_url: '#works',
     banner_secondary_text: 'اكتشفي المدرسة',
     banner_secondary_url: '#home',
     banner_features: [
-      { icon: '✦', text: 'تعليم متميز' },
-      { icon: '⌁', text: 'أثر مستدام' },
-      { icon: '↗', text: 'ابتكار وتمكين' },
+      { icon: '✦', text: 'تعليم وتعلّم' },
+      { icon: '⌁', text: 'رعاية وتوجيه' },
+      { icon: '↗', text: 'نشاط وابتكار' },
       { icon: '◎', text: 'شراكة مجتمعية' }
     ],
     vision: '',
@@ -169,6 +169,29 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       console.warn('تعذر تحميل إعدادات صفحة عن المدرسة:', error);
     } else if (data?.value && typeof data.value === 'object') {
       aboutSettings = { ...aboutSettings, ...data.value };
+      // Replace legacy event-template copy with school-specific copy, without touching uploaded images or other About-page settings.
+      const legacyText = [aboutSettings.banner_title, aboutSettings.banner_kicker, aboutSettings.banner_subtitle].join(' ').toLowerCase();
+      if (/business game changer|corprights|10 days to go|empowering educators|2025/.test(legacyText)) {
+        aboutSettings = {
+          ...aboutSettings,
+          banner_title: 'الثانوية الخامسة بمكة المكرمة',
+          banner_kicker: 'عن مدرستي | بوابة منجز',
+          banner_subtitle: 'نحتفي بمنجزات طالباتنا ومعلماتنا، ونوثّق أثر التعليم والإبداع والشراكة المجتمعية.',
+          banner_date: aboutSettings.banner_date && !/2025|10 days/i.test(aboutSettings.banner_date) ? aboutSettings.banner_date : 'عام دراسي حافل بالإنجاز',
+          banner_time: aboutSettings.banner_time || 'تعليم متميز وتعلّم فاعل',
+          banner_location: 'مكة المكرمة',
+          banner_primary_text: 'استعرضي منجزات المدرسة',
+          banner_primary_url: '#works',
+          banner_secondary_text: 'تعرّفي على المدرسة',
+          banner_secondary_url: '#about',
+          banner_features: [
+            { icon: '✦', text: 'تعليم وتعلّم' },
+            { icon: '⌁', text: 'رعاية وتوجيه' },
+            { icon: '↗', text: 'نشاط وابتكار' },
+            { icon: '◎', text: 'شراكة مجتمعية' }
+          ]
+        };
+      }
     }
     renderAboutSettings();
   }
