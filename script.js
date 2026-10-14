@@ -1540,7 +1540,7 @@ $('#allWorks')?.addEventListener(
     }
 
     detailsModal.querySelector('iframe').src =
-      `work.html?id=${encodeURIComponent(workId)}&v=20261014-1`;
+      `work.html?id=${encodeURIComponent(workId)}&admin=${state.role === "admin" ? 1 : 0}&v=20261014-2`;
     detailsModal.classList.add('is-open');
     document.body.classList.add('details-modal-open');
   }
