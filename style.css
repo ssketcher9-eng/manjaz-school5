@@ -310,3 +310,5 @@ body.details-modal-open{overflow:hidden}
 @media(prefers-reduced-motion:reduce){
  .about-hero,.about-hero-copy,.about-hero-portrait-wrap,.about-hero-glow,.about-hero-portrait-ring,.about-hero-floating{animation:none!important;transition:none!important}
 }
+
+.about-hero-background[hidden]{display:none!important}
