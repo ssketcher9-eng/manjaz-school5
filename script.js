@@ -68,6 +68,24 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
   let aboutSettings = {
     banner_url: '',
+    banner_background_url: '',
+    banner_portrait_url: '',
+    banner_title: 'منجزات تصنع المستقبل',
+    banner_kicker: 'الثانوية الخامسة بمكة المكرمة',
+    banner_subtitle: 'نحو تعليم متميز، وبيئة محفزة، وأثر مستدام.',
+    banner_date: 'عام دراسي متميز',
+    banner_time: 'تعلم وإبداع',
+    banner_location: 'مكة المكرمة',
+    banner_primary_text: 'استعرضي المنجزات',
+    banner_primary_url: '#works',
+    banner_secondary_text: 'اكتشفي المدرسة',
+    banner_secondary_url: '#home',
+    banner_features: [
+      { icon: '✦', text: 'تعليم متميز' },
+      { icon: '⌁', text: 'أثر مستدام' },
+      { icon: '↗', text: 'ابتكار وتمكين' },
+      { icon: '◎', text: 'شراكة مجتمعية' }
+    ],
     vision: '',
     mission: '',
     students: '',
@@ -79,11 +97,32 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   function renderAboutSettings() {
     const banner = $('#aboutBanner');
     const bannerImage = $('#aboutBannerImage');
-    if (aboutSettings.banner_url && banner && bannerImage) {
-      bannerImage.src = aboutSettings.banner_url;
-      banner.hidden = false;
-    } else if (banner) {
-      banner.hidden = true;
+    const backgroundUrl = aboutSettings.banner_background_url || aboutSettings.banner_url || '';
+    if (bannerImage) {
+      if (backgroundUrl) { bannerImage.src = backgroundUrl; bannerImage.hidden = false; }
+      else { bannerImage.removeAttribute('src'); bannerImage.hidden = true; }
+    }
+    if (banner) banner.hidden = false;
+    $('#aboutHeroTitle').textContent = aboutSettings.banner_title || 'منجزات تصنع المستقبل';
+    $('#aboutHeroKicker').textContent = aboutSettings.banner_kicker || 'الثانوية الخامسة بمكة المكرمة';
+    $('#aboutHeroSubtitle').textContent = aboutSettings.banner_subtitle || 'نحو تعليم متميز، وبيئة محفزة، وأثر مستدام.';
+    $('#aboutHeroDate').textContent = aboutSettings.banner_date || 'عام دراسي متميز';
+    $('#aboutHeroTime').textContent = aboutSettings.banner_time || 'تعلم وإبداع';
+    $('#aboutHeroLocation').textContent = aboutSettings.banner_location || 'مكة المكرمة';
+    const portrait = $('#aboutHeroPortrait');
+    const portraitPlaceholder = $('#aboutHeroPortraitPlaceholder');
+    if (portrait && aboutSettings.banner_portrait_url) { portrait.src = aboutSettings.banner_portrait_url; portrait.hidden = false; if (portraitPlaceholder) portraitPlaceholder.hidden = true; }
+    else { if (portrait) { portrait.hidden = true; portrait.removeAttribute('src'); } if (portraitPlaceholder) portraitPlaceholder.hidden = false; }
+    const safeBannerHref = value => { const href = String(value || '').trim(); return href.startsWith('#') || /^https?:\\/\\//i.test(href) ? href : '#works'; };
+    const primary = $('#aboutHeroPrimary');
+    const secondary = $('#aboutHeroSecondary');
+    if (primary) { primary.textContent = aboutSettings.banner_primary_text || 'استعرضي المنجزات'; primary.href = safeBannerHref(aboutSettings.banner_primary_url || '#works'); const arrow = document.createElement('span'); arrow.textContent = '←'; primary.appendChild(arrow); }
+    if (secondary) { secondary.textContent = aboutSettings.banner_secondary_text || 'اكتشفي المدرسة'; secondary.href = safeBannerHref(aboutSettings.banner_secondary_url || '#home'); }
+    const featureGrid = $('#aboutHeroFeatures');
+    if (featureGrid) {
+      const features = Array.isArray(aboutSettings.banner_features) ? aboutSettings.banner_features : [];
+      const defaults = [{icon:'✦',text:'تعليم متميز'},{icon:'⌁',text:'أثر مستدام'},{icon:'↗',text:'ابتكار وتمكين'},{icon:'◎',text:'شراكة مجتمعية'}];
+      featureGrid.innerHTML = (features.length ? features : defaults).slice(0,4).map(item => '<div><b>' + escapeHTML(item.icon || '✦') + '</b><span>' + escapeHTML(item.text || '') + '</span></div>').join('');
     }
     $('#aboutVisionText').textContent = aboutSettings.vision || 'لم تُضف الرؤية بعد.';
     $('#aboutMissionText').textContent = aboutSettings.mission || 'لم تُضف الرسالة بعد.';
@@ -99,6 +138,17 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     }
 
     if (state.role === 'admin') {
+      $('#aboutHeroTitleInput').value = aboutSettings.banner_title || '';
+      $('#aboutHeroKickerInput').value = aboutSettings.banner_kicker || '';
+      $('#aboutHeroSubtitleInput').value = aboutSettings.banner_subtitle || '';
+      $('#aboutHeroDateInput').value = aboutSettings.banner_date || '';
+      $('#aboutHeroTimeInput').value = aboutSettings.banner_time || '';
+      $('#aboutHeroLocationInput').value = aboutSettings.banner_location || '';
+      $('#aboutHeroPrimaryTextInput').value = aboutSettings.banner_primary_text || '';
+      $('#aboutHeroPrimaryUrlInput').value = aboutSettings.banner_primary_url || '#works';
+      $('#aboutHeroSecondaryTextInput').value = aboutSettings.banner_secondary_text || '';
+      $('#aboutHeroSecondaryUrlInput').value = aboutSettings.banner_secondary_url || '#home';
+      $('#aboutHeroFeaturesInput').value = (Array.isArray(aboutSettings.banner_features) ? aboutSettings.banner_features : []).map(item => (item.icon || '✦') + ' | ' + (item.text || '')).join('\n');
       $('#aboutVisionInput').value = aboutSettings.vision || '';
       $('#aboutMissionInput').value = aboutSettings.mission || '';
       $('#aboutStudentsInput').value = aboutSettings.students ?? '';
