@@ -684,3 +684,10 @@ button:focus-visible,a:focus-visible{outline:3px solid #bd78f5!important;outline
   #aboutBanner .about-hero-detail { min-width: 0; }
   #aboutBanner .about-hero-detail strong { min-width: 0; overflow-wrap: anywhere; }
 }
+
+
+/* Do not show the temporary Arabic-letter placeholder when the real portrait is loaded. */
+#aboutHeroPortraitPlaceholder[hidden],
+#aboutHeroPortrait[hidden] {
+  display: none !important;
+}
