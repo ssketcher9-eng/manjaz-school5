@@ -377,6 +377,24 @@
     .work-thumb { display:block; width:64px; height:52px; overflow:hidden; border-radius:8px; }
     .work-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
 
+
+    /* Hotfix: override legacy details styles that constrained the inner card */
+    html, body, .work-page, .work-page-container { box-sizing:border-box !important; width:100% !important; max-width:none !important; min-width:0 !important; margin:0 !important; }
+    .work-page { height:100% !important; min-height:0 !important; padding:0 !important; overflow:hidden !important; }
+    .work-page-container { height:100% !important; padding:0 !important; }
+    .work-details-card { box-sizing:border-box !important; display:flex !important; flex-direction:column !important; width:100% !important; max-width:none !important; min-width:0 !important; height:100% !important; max-height:90vh !important; margin:0 !important; padding:0 !important; overflow:hidden !important; border-radius:20px !important; }
+    .work-details-header { flex:0 0 auto !important; width:100% !important; box-sizing:border-box !important; }
+    .work-details-content { flex:1 1 auto !important; width:100% !important; min-width:0 !important; min-height:0 !important; box-sizing:border-box !important; overflow-y:auto !important; overflow-x:hidden !important; }
+    .work-hero { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; width:100% !important; min-width:0 !important; gap:24px !important; direction:rtl !important; }
+    .work-media-column,.work-summary { min-width:0 !important; width:100% !important; }
+    .work-cover { width:100% !important; min-width:0 !important; height:auto !important; min-height:0 !important; aspect-ratio:16/9 !important; padding:0 !important; border:0 !important; background:transparent !important; }
+    .work-cover img { width:100% !important; height:100% !important; max-width:none !important; max-height:none !important; object-fit:cover !important; }
+    .work-details-footer { flex:0 0 auto !important; width:100% !important; box-sizing:border-box !important; }
+    @media(max-width:700px) {
+      .work-details-card { max-height:94vh !important; }
+      .work-hero { grid-template-columns:minmax(0,1fr) !important; gap:16px !important; }
+    }
+
   </style>
 </head>
 
