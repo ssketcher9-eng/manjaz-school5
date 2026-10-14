@@ -186,27 +186,47 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       button.disabled = true;
       message.textContent = 'جارٍ الحفظ...';
       try {
-        const file = $('#aboutBannerFile').files?.[0];
-        let bannerUrl = aboutSettings.banner_url || '';
-        if (file) {
+        const uploadSchoolImage = async (inputId, existingUrl, folder, sizeLabel) => {
+          const file = $('#' + inputId).files?.[0];
+          if (!file) return existingUrl || '';
           if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
             throw new Error('اختاري صورة JPG أو PNG أو WebP.');
           }
           if (file.size > 10 * 1024 * 1024) {
-            throw new Error('حجم صورة البنر يتجاوز 10 ميجابايت.');
+            throw new Error('حجم ' + sizeLabel + ' يتجاوز 10 ميجابايت.');
           }
           const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-          const path = `about/banner/${crypto.randomUUID()}-${safeName}`;
+          const path = folder + '/' + crypto.randomUUID() + '-' + safeName;
           const { error: uploadError } = await supabase.storage
             .from('school-assets')
             .upload(path, file, { contentType: file.type, upsert: false });
           if (uploadError) throw uploadError;
           const { data: publicUrlData } = supabase.storage.from('school-assets').getPublicUrl(path);
-          bannerUrl = publicUrlData?.publicUrl || '';
-        }
+          return publicUrlData?.publicUrl || '';
+        };
+        const backgroundUrl = await uploadSchoolImage('aboutBannerFile', aboutSettings.banner_background_url || aboutSettings.banner_url, 'about/banner', 'صورة الخلفية');
+        const portraitUrl = await uploadSchoolImage('aboutHeroPortraitFile', aboutSettings.banner_portrait_url, 'about/portrait', 'الصورة الرئيسية');
+
+        const featureLines = $('#aboutHeroFeaturesInput').value.split('\\n').map(line => {
+          const parts = line.split('|');
+          return { icon: (parts[0] || '✦').trim(), text: parts.slice(1).join('|').trim() };
+        }).filter(item => item.text).slice(0, 4);
 
         const nextSettings = {
-          banner_url: bannerUrl,
+          banner_url: backgroundUrl,
+          banner_background_url: backgroundUrl,
+          banner_portrait_url: portraitUrl,
+          banner_title: $('#aboutHeroTitleInput').value.trim(),
+          banner_kicker: $('#aboutHeroKickerInput').value.trim(),
+          banner_subtitle: $('#aboutHeroSubtitleInput').value.trim(),
+          banner_date: $('#aboutHeroDateInput').value.trim(),
+          banner_time: $('#aboutHeroTimeInput').value.trim(),
+          banner_location: $('#aboutHeroLocationInput').value.trim(),
+          banner_primary_text: $('#aboutHeroPrimaryTextInput').value.trim(),
+          banner_primary_url: $('#aboutHeroPrimaryUrlInput').value.trim() || '#works',
+          banner_secondary_text: $('#aboutHeroSecondaryTextInput').value.trim(),
+          banner_secondary_url: $('#aboutHeroSecondaryUrlInput').value.trim() || '#home',
+          banner_features: featureLines,
           vision: $('#aboutVisionInput').value.trim(),
           mission: $('#aboutMissionInput').value.trim(),
           students: $('#aboutStudentsInput').value.trim(),
@@ -229,7 +249,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         aboutSettings = nextSettings;
         renderAboutSettings();
         $('#aboutBannerFile').value = '';
-        message.textContent = 'تم حفظ بيانات صفحة عن المدرسة.';
+        $('#aboutHeroPortraitFile').value = '';
+        message.textContent = 'تم حفظ بيانات صفحة عن المدرسة والبنر.';
       } catch (error) {
         console.error(error);
         message.textContent = error.message || 'تعذر حفظ الإعدادات.';
