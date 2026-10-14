@@ -334,17 +334,24 @@
 
     <div class="work-page-container">
 
-      <a href="index.html#works" class="back-button">
-        ← العودة إلى المنجزات
-      </a>
-
-      <section
-        id="workDetails"
-        class="work-details-card"
-      >
-        <div class="work-loading">
-          جاري تحميل المنجز...
+      <section class="work-details-card" aria-label="بطاقة تفاصيل المنجز">
+        <header class="work-details-header">
+          <h1>تفاصيل المنجز</h1>
+          <button class="work-close-button" type="button" aria-label="إغلاق">×</button>
+        </header>
+        <div id="workDetails" class="work-details-content">
+          <div class="work-loading">جاري تحميل المنجز...</div>
         </div>
+        <footer class="work-details-footer">
+          <div class="work-admin-actions" id="workAdminActions" hidden>
+            <button type="button" class="work-btn work-btn-edit" id="editWorkButton">تعديل</button>
+            <button type="button" class="work-btn work-btn-delete" id="deleteWorkButton">حذف</button>
+          </div>
+          <div class="work-navigation-actions">
+            <button type="button" class="work-btn work-btn-home" id="homeWorkButton">العودة إلى الصفحة الرئيسية</button>
+            <button type="button" class="work-btn work-btn-close" id="closeWorkButton">إغلاق</button>
+          </div>
+        </footer>
       </section>
 
     </div>
