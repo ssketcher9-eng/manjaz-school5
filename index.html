@@ -37,8 +37,29 @@
   <div class="home-sections" id="homeSections"></div>
 </section>
 <section id="about" class="page">
+  <section id="aboutBanner" class="about-hero" aria-label="بنر المدرسة">
+    <div class="about-hero-glow about-hero-glow-one"></div><div class="about-hero-glow about-hero-glow-two"></div>
+    <img id="aboutBannerImage" class="about-hero-background" alt="" aria-hidden="true">
+    <div class="about-hero-copy">
+      <span id="aboutHeroKicker" class="about-hero-kicker">الثانوية الخامسة بمكة المكرمة</span>
+      <h1 id="aboutHeroTitle">منجزات تصنع المستقبل</h1>
+      <p id="aboutHeroSubtitle">نحو تعليم متميز، وبيئة محفزة، وأثر مستدام.</p>
+      <div class="about-hero-details">
+        <div class="about-hero-detail"><span>التاريخ</span><strong id="aboutHeroDate">عام دراسي متميز</strong></div>
+        <div class="about-hero-detail"><span>البيئة التعليمية</span><strong id="aboutHeroTime">تعلم وإبداع</strong></div>
+        <div class="about-hero-detail"><span>الموقع</span><strong id="aboutHeroLocation">مكة المكرمة</strong></div>
+      </div>
+      <div class="about-hero-actions">
+        <a id="aboutHeroPrimary" href="#works" class="about-hero-primary">استعرضي المنجزات <span>←</span></a>
+        <a id="aboutHeroSecondary" href="#home" class="about-hero-secondary">اكتشفي المدرسة</a>
+      </div>
+      <div id="aboutHeroFeatures" class="about-hero-features">
+        <div><b>✦</b><span>تعليم متميز</span></div><div><b>⌁</b><span>أثر مستدام</span></div><div><b>↗</b><span>ابتكار وتمكين</span></div><div><b>◎</b><span>شراكة مجتمعية</span></div>
+      </div>
+    </div>
+    <div class="about-hero-portrait-wrap"><div class="about-hero-portrait-ring"></div><img id="aboutHeroPortrait" class="about-hero-portrait" alt="صورة تعريفية للمدرسة" hidden><div id="aboutHeroPortraitPlaceholder" class="about-hero-monogram">م</div><span class="about-hero-floating">تميّز · إبداع · أثر</span></div>
+  </section>
   <h2>عن المدرسة</h2>
-  <div id="aboutBanner" class="about-banner" hidden><img id="aboutBannerImage" alt="بنر المدرسة"></div>
   <div class="about-identity"><h3>الثانوية الخامسة بمكة المكرمة</h3></div>
   <div class="about-vision-grid">
     <article class="about-text-card"><h3>رؤيتنا</h3><p id="aboutVisionText">سيتم عرض رؤية المدرسة هنا.</p></article>
@@ -70,8 +91,29 @@
     <h3>إعدادات صفحة «عن المدرسة»</h3>
     <p>تعديل بنر المدرسة والرؤية والرسالة والإحصائيات التي تظهر للزوار.</p>
     <form id="aboutSettingsForm">
-      <label>صورة بنر المدرسة<input id="aboutBannerFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
-      <small>الصيغ المقبولة JPG وPNG وWebP، الحد الأقصى 10 ميجابايت. اتركي الحقل فارغًا للاحتفاظ بالبنر الحالي.</small>
+      <h4>بنر صفحة «عن المدرسة»</h4>
+      <label>صورة الخلفية (اختياري)<input id="aboutBannerFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <small>صورة عريضة للخلفية، JPG أو PNG أو WebP، بحد أقصى 10 ميجابايت.</small>
+      <label>الصورة الرئيسية في البنر (اختياري)<input id="aboutHeroPortraitFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <small>يفضل صورة عمودية بخلفية هادئة. اتركي الحقل فارغًا للاحتفاظ بالصورة الحالية.</small>
+      <div class="grid">
+        <label>العنوان الرئيسي<input id="aboutHeroTitleInput" maxlength="120" placeholder="منجزات تصنع المستقبل"></label>
+        <label>السطر التعريفي أعلى العنوان<input id="aboutHeroKickerInput" maxlength="120" placeholder="الثانوية الخامسة بمكة المكرمة"></label>
+      </div>
+      <label>الوصف المختصر<textarea id="aboutHeroSubtitleInput" rows="2" maxlength="260" placeholder="نحو تعليم متميز، وبيئة محفزة، وأثر مستدام."></textarea></label>
+      <div class="grid">
+        <label>التاريخ أو العام الدراسي<input id="aboutHeroDateInput" maxlength="80" placeholder="العام الدراسي 1448هـ"></label>
+        <label>عبارة البيئة التعليمية<input id="aboutHeroTimeInput" maxlength="80" placeholder="تعلم وإبداع"></label>
+        <label>الموقع<input id="aboutHeroLocationInput" maxlength="100" placeholder="مكة المكرمة"></label>
+      </div>
+      <div class="grid">
+        <label>نص الزر الرئيسي<input id="aboutHeroPrimaryTextInput" maxlength="50" placeholder="استعرضي المنجزات"></label>
+        <label>وجهة الزر الرئيسي<input id="aboutHeroPrimaryUrlInput" maxlength="180" placeholder="#works"></label>
+        <label>نص الزر الثانوي<input id="aboutHeroSecondaryTextInput" maxlength="50" placeholder="اكتشفي المدرسة"></label>
+        <label>وجهة الزر الثانوي<input id="aboutHeroSecondaryUrlInput" maxlength="180" placeholder="#home"></label>
+      </div>
+      <label>بطاقات المزايا (كل سطر: الرمز | النص)<textarea id="aboutHeroFeaturesInput" rows="4" placeholder="✦ | تعليم متميز\n⌁ | أثر مستدام\n↗ | ابتكار وتمكين\n◎ | شراكة مجتمعية"></textarea></label>
+      <small>تظهر البيانات مباشرة في البنر. استخدمي روابط داخلية مثل #works أو رابطًا يبدأ بـ https://.</small>
       <label>الرؤية<textarea id="aboutVisionInput" rows="3" placeholder="اكتبي رؤية المدرسة"></textarea></label>
       <label>الرسالة<textarea id="aboutMissionInput" rows="3" placeholder="اكتبي رسالة المدرسة"></textarea></label>
       <div class="grid">
