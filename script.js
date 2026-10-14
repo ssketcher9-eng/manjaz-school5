@@ -95,6 +95,11 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   };
 
   function renderAboutSettings() {
+    const logo = document.querySelector('.school-logo');
+    if (logo) {
+      if (aboutSettings.logo_url) logo.innerHTML = `<img src="${escapeHTML(aboutSettings.logo_url)}" alt="شعار المدرسة">`;
+      else logo.textContent = 'شعار';
+    }
     const banner = $('#aboutBanner');
     const bannerImage = $('#aboutBannerImage');
     const backgroundUrl = aboutSettings.banner_background_url || aboutSettings.banner_url || '';
@@ -227,6 +232,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
           const { data: publicUrlData } = supabase.storage.from('school-assets').getPublicUrl(path);
           return publicUrlData?.publicUrl || '';
         };
+        const logoUrl = await uploadSchoolImage('schoolLogoFile', aboutSettings.logo_url, 'school/logo', 'شعار المدرسة');
         const backgroundUrl = await uploadSchoolImage('aboutBannerFile', aboutSettings.banner_background_url || aboutSettings.banner_url, 'about/banner', 'صورة الخلفية');
         const portraitUrl = await uploadSchoolImage('aboutHeroPortraitFile', aboutSettings.banner_portrait_url, 'about/portrait', 'الصورة الرئيسية');
 
@@ -236,6 +242,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         }).filter(item => item.text).slice(0, 4);
 
         const nextSettings = {
+          logo_url: logoUrl,
           banner_url: backgroundUrl,
           banner_background_url: backgroundUrl,
           banner_portrait_url: portraitUrl,
@@ -271,9 +278,10 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         if (saveError) throw saveError;
         aboutSettings = nextSettings;
         renderAboutSettings();
+        $('#schoolLogoFile').value = '';
         $('#aboutBannerFile').value = '';
         $('#aboutHeroPortraitFile').value = '';
-        message.textContent = 'تم حفظ بيانات صفحة عن المدرسة والبنر.';
+        message.textContent = 'تم حفظ الشعار وبيانات صفحة عن المدرسة والبنر.';
       } catch (error) {
         console.error(error);
         message.textContent = error.message || 'تعذر حفظ الإعدادات.';
