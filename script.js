@@ -216,18 +216,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     return categorySectionMap[String(category || '').trim()] || '';
   }
 
-  // اربط المجال بالقسم تلقائيًا حتى لا تُحفظ المجالات المختلفة تحت قسم المنجزات.
-  const categoryInputForSection = $('#category');
-  const sectionInputForCategory = $('#achievementSection');
-  if (categoryInputForSection && sectionInputForCategory) {
-    categoryInputForSection.addEventListener('change', () => {
-      const mappedSection = categoryToSection(categoryInputForSection.value);
-      if (mappedSection) {
-        sectionInputForCategory.value = mappedSection;
-        state.targetSection = mappedSection;
-      }
-    });
-  }
+  // القسم الذي بدأت منه الإضافة هو الذي يحدد مكان العرض؛ تغيير المجال لا ينقل المنجز تلقائيًا.
 
   // فتح نموذج الإضافة من القسم مع تحديد مجاله مسبقًا.
   document.addEventListener('click', event => {
@@ -1020,8 +1009,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       const sectionId = container.dataset.sectionId || '';
       // اعرض المنجزات المعتمدة وقيد المراجعة داخل القسم، مع إظهار الحالة على البطاقة.
       const items = state.works.filter(work => {
-        const categorySection = categoryToSection(work.category);
-        return (categorySection || work.department) === sectionId;
+        // موقع العرض يحدده القسم الذي بدأت منه الإضافة (department)، لا تصنيف المنجز.
+        return work.department === sectionId || (!work.department && categoryToSection(work.category) === sectionId);
       });
       if (!items.length) {
         container.innerHTML = '<div class="empty">لا توجد منجزات في هذا القسم حتى الآن.</div>';
@@ -1070,7 +1059,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
         const matchesFilter =
           filter === 'all' ||
-          work.category === filter;
+          (filter === 'منجز' ? (work.department === 'works' || (!work.department && categoryToSection(work.category) === 'works')) : work.category === filter);
 
         return (
           matchesSearch &&
