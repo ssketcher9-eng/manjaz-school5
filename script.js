@@ -113,7 +113,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     const portraitPlaceholder = $('#aboutHeroPortraitPlaceholder');
     if (portrait && aboutSettings.banner_portrait_url) { portrait.src = aboutSettings.banner_portrait_url; portrait.hidden = false; if (portraitPlaceholder) portraitPlaceholder.hidden = true; }
     else { if (portrait) { portrait.hidden = true; portrait.removeAttribute('src'); } if (portraitPlaceholder) portraitPlaceholder.hidden = false; }
-    const safeBannerHref = value => { const href = String(value || '').trim(); return href.startsWith('#') || /^https?:\\/\\//i.test(href) ? href : '#works'; };
+    const safeBannerHref = value => { const href = String(value || '').trim(); return href.startsWith('#') || href.startsWith('https://') || href.startsWith('http://') ? href : '#works'; };
     const primary = $('#aboutHeroPrimary');
     const secondary = $('#aboutHeroSecondary');
     if (primary) { primary.textContent = aboutSettings.banner_primary_text || 'استعرضي المنجزات'; primary.href = safeBannerHref(aboutSettings.banner_primary_url || '#works'); const arrow = document.createElement('span'); arrow.textContent = '←'; primary.appendChild(arrow); }
