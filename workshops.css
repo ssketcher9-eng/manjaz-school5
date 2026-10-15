@@ -68,3 +68,8 @@
 
 .workshop-card-labels{display:flex;align-items:center;justify-content:flex-start;gap:6px;flex-wrap:wrap;margin:0 0 10px}
 .workshop-card-labels .workshop-card-label{margin:0!important}
+
+/* Final workshop card order: cover first, badges immediately below */
+.workshop-display-card>.workshop-cover{display:block!important;margin:0 -19px 12px!important;width:calc(100% + 38px)!important;order:0}
+.workshop-display-card>.workshop-card-labels{display:flex!important;position:static!important;inset:auto!important;order:1;margin:0 0 12px!important;padding:0!important}
+.workshop-display-card>.workshop-card-labels .workshop-card-label{display:inline-block!important;margin:0!important}
