@@ -58,3 +58,7 @@
 /* Small breathing space between status badge and cover */
 .workshop-display-card .workshop-card-label{margin-bottom:14px}
 .workshop-display-card .workshop-cover{margin-top:4px}
+
+/* Keep a visible small gap between status and workshop cover */
+.workshop-display-card>.workshop-card-label:first-child{margin-bottom:12px!important}
+.workshop-display-card>.workshop-cover{margin-top:0!important}
