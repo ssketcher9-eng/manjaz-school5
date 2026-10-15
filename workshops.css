@@ -25,3 +25,54 @@
 .workshop-download-item strong{display:inline-block;background:#fde7e7;color:#9d2525;padding:5px 8px;border-radius:6px;font-size:11px;margin-left:7px}
 .workshop-download-item a{display:inline-block;background:#123f57;color:#fff;padding:9px 12px;border-radius:8px;font-size:12px;text-decoration:none}
 .workshop-no-files{color:var(--muted);font-size:13px}
+
+
+/* تحسين تنسيق قسم الورش */
+.workshop-cards{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));
+  align-items:stretch;
+  gap:22px;
+}
+.workshop-display-card{
+  min-width:0;
+  padding:18px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+.workshop-display-card .workshop-cover{
+  width:calc(100% + 36px);
+  height:auto;
+  aspect-ratio:16/9;
+  flex:0 0 auto;
+  margin:-18px -18px 16px;
+  border-radius:14px 14px 0 0;
+  background:#edf3f4;
+}
+.workshop-display-card .workshop-cover img{
+  width:100%;
+  height:100%;
+  min-height:0;
+  object-fit:cover;
+}
+.workshop-display-card .workshop-card-label{align-self:flex-start}
+.workshop-display-card h3{line-height:1.55;overflow-wrap:anywhere}
+.workshop-display-card p{margin:0;line-height:1.8;overflow-wrap:anywhere}
+.workshop-display-card .workshop-meta{gap:9px;line-height:1.65}
+.workshop-display-card .workshop-open-hint{margin-top:auto;padding-top:12px}
+.workshop-display-card .workshop-actions{margin-top:8px}
+.workshop-form-panel{padding:clamp(16px,2.5vw,28px)}
+#workshopForm{display:grid;gap:16px}
+#workshopForm>label{display:block;margin:0}
+#workshopForm .grid{gap:14px}
+#workshopForm input[type=file]{max-width:100%;box-sizing:border-box}
+#workshopForm label small{display:block;line-height:1.7;margin-top:6px}
+@media(max-width:600px){
+  .workshop-cards{grid-template-columns:minmax(0,1fr);gap:18px}
+  .workshop-display-card{padding:15px}
+  .workshop-display-card .workshop-cover{width:calc(100% + 30px);margin:-15px -15px 14px}
+  .workshop-intro{align-items:flex-start}
+  #workshopForm .grid{grid-template-columns:minmax(0,1fr)}
+  .workshop-actions button{flex:1 1 auto}
+}
