@@ -25,3 +25,8 @@
 .workshop-download-item strong{display:inline-block;background:#fde7e7;color:#9d2525;padding:5px 8px;border-radius:6px;font-size:11px;margin-left:7px}
 .workshop-download-item a{display:inline-block;background:#123f57;color:#fff;padding:9px 12px;border-radius:8px;font-size:12px;text-decoration:none}
 .workshop-no-files{color:var(--muted);font-size:13px}
+
+.workshop-detail-image-item{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.workshop-attachment-delete{border:1px solid #e7b8b8;background:#fff3f3;color:#9b2929;border-radius:8px;padding:7px 10px;font:inherit;font-size:12px;cursor:pointer}
+.workshop-attachment-delete:disabled{opacity:.6;cursor:wait}
+.workshop-download-item>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
