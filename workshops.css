@@ -62,3 +62,6 @@
 /* Keep a visible small gap between status and workshop cover */
 .workshop-display-card>.workshop-card-label:first-child{margin-bottom:12px!important}
 .workshop-display-card>.workshop-cover{margin-top:0!important}
+
+/* Slightly tighter status-to-cover spacing */
+.workshop-display-card>.workshop-card-label:first-child{margin-bottom:5px!important}
