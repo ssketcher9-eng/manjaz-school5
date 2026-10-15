@@ -54,3 +54,7 @@
 .workshop-detail-image-item{min-width:0}
 .workshop-download-item>div{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
 .workshop-download-item>div .workshop-attachment-delete{align-self:flex-start}
+
+/* Small breathing space between status badge and cover */
+.workshop-display-card .workshop-card-label{margin-bottom:14px}
+.workshop-display-card .workshop-cover{margin-top:4px}
