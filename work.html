@@ -502,21 +502,22 @@
           const { data: profile } = await supabase.from('profiles').select('role').eq('id', currentUserId).maybeSingle();
           currentRole = profile?.role || 'member';
         }
-        if (ownerActions && currentWork && currentUserId && String(currentWork.created_by || '') === String(currentUserId)) ownerActions.hidden = false;
+        if (ownerActions && currentWork && currentUserId && (String(currentWork.created_by || '') === String(currentUserId) || currentRole === 'admin')) ownerActions.hidden = false;
         if (adminActions && currentRole === 'admin') adminActions.hidden = false;
       } catch (authError) { console.warn('تعذر التحقق من صلاحيات تفاصيل المنجز:', authError); }
     })();
     document.querySelector('#editWorkButton')?.addEventListener('click', () => {
-      if (!currentWork || !currentUserId || String(currentWork.created_by || '') !== String(currentUserId)) {
-        alert('يمكنك اقتراح تعديل منجزك فقط بعد تسجيل الدخول.');
+      if (!currentWork || !currentUserId || (String(currentWork.created_by || '') !== String(currentUserId) && currentRole !== 'admin')) {
+        alert('يمكنك تعديل منجزك أو يلزم تسجيل الدخول بحساب الإدارة.');
         return;
       }
       renderAchievementEditForm();
     });
 
     function renderAchievementEditForm() {
-      if (!currentWork || !currentUserId || String(currentWork.created_by || '') !== String(currentUserId)) {
-        alert('لا تملكين صلاحية اقتراح تعديل هذا المنجز.');
+      const isAdmin = currentRole === 'admin';
+      if (!currentWork || !currentUserId || (String(currentWork.created_by || '') !== String(currentUserId) && !isAdmin)) {
+        alert('لا تملكين صلاحية تعديل هذا المنجز.');
         return;
       }
       const d = currentWork;
@@ -526,8 +527,8 @@
         </label>`;
       details.innerHTML = `
         <form id="achievementEditRequestForm" class="achievement-edit-form">
-          <h2>اقتراح تعديل المنجز</h2>
-          <p class="edit-request-intro">عدّلي البيانات المطلوبة هنا. لن تتغير البيانات المنشورة حتى تراجع الإدارة الطلب وتوافق عليه.</p>
+          <h2>${isAdmin ? 'تعديل المنجز' : 'اقتراح تعديل المنجز'}</h2>
+          <p class="edit-request-intro">${isAdmin ? 'سيتم حفظ التعديلات مباشرة على بيانات المنجز.' : 'عدّلي البيانات المطلوبة هنا. لن تتغير البيانات المنشورة حتى تراجع الإدارة الطلب وتوافق عليه.'}</p>
           <div class="edit-request-grid">
             ${field('editTitle','عنوان المنجز',d.title,'text',true)}
             <label class="edit-request-field" for="editCategory">القسم / المجال *
@@ -559,7 +560,7 @@
           </div>
           <div class="edit-request-preserve-note">صورة الغلاف والمرفقات الحالية ستبقى كما هي، ولا يمكن تغييرها من طلب التعديل هذا.</div>
           <div class="edit-request-actions">
-            <button type="submit" class="work-btn work-btn-edit" id="submitAchievementEditRequest">إرسال طلب التعديل للمراجعة</button>
+            <button type="submit" class="work-btn work-btn-edit" id="submitAchievementEditRequest">${isAdmin ? 'حفظ التعديلات' : 'إرسال طلب التعديل للمراجعة'}</button>
             <button type="button" class="work-btn work-btn-home" id="cancelAchievementEditRequest">إلغاء والعودة للتفاصيل</button>
           </div>
           <p id="editRequestStatus" class="edit-request-status" role="status" aria-live="polite"></p>
@@ -570,7 +571,8 @@
 
     async function submitAchievementEditRequest(event) {
       event.preventDefault();
-      if (!currentWork || !currentUserId || String(currentWork.created_by || '') !== String(currentUserId)) {
+      const isAdmin = currentRole === 'admin';
+      if (!currentWork || !currentUserId || (String(currentWork.created_by || '') !== String(currentUserId) && !isAdmin)) {
         alert('انتهت صلاحية الجلسة أو لا تملكين صلاحية تعديل هذا المنجز. سجّلي الدخول ثم حاولي مجددًا.');
         return;
       }
@@ -596,9 +598,16 @@
         return;
       }
       submitButton.disabled = true;
-      submitButton.textContent = 'جارٍ إرسال الطلب…';
+      submitButton.textContent = isAdmin ? 'جارٍ حفظ التعديلات…' : 'جارٍ إرسال الطلب…';
       if (status) status.textContent = '';
       try {
+        if (isAdmin) {
+          const { error: updateError } = await supabase.from('achievements').update(proposedData).eq('id', workId);
+          if (updateError) throw updateError;
+          alert('تم حفظ تعديلات المنجز.');
+          await loadWork();
+          return;
+        }
         const { data: pending, error: pendingError } = await supabase
           .from('achievement_edit_requests')
           .select('id')
@@ -677,7 +686,7 @@
       }
 
       currentWork = data;
-      if (ownerActions && currentUserId && String(data.created_by || '') === String(currentUserId)) ownerActions.hidden = false;
+      if (ownerActions && currentUserId && (String(data.created_by || '') === String(currentUserId) || currentRole === 'admin')) ownerActions.hidden = false;
       if (adminActions && currentRole === 'admin') adminActions.hidden = false;
       document.title =
         `${data.title || 'تفاصيل المنجز'} | بوابة المنجزات`;
