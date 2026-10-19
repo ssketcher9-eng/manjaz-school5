@@ -1296,9 +1296,9 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     const coverInput = $('#coverImage');
     if (heading) heading.textContent = work ? 'تعديل المنجز' : 'إضافة منجز جديد';
     if (submit) submit.textContent = work ? 'حفظ التعديلات وإرسال للمراجعة' : 'حفظ المنجز';
-    if (coverInput) coverInput.required = !work;
+    if (coverInput) { coverInput.required = !work; coverInput.disabled = Boolean(work); }
     const coverHeading = coverInput?.closest('.media-upload-section')?.querySelector('h3');
-    if (coverHeading) coverHeading.textContent = work ? 'صورة الغلاف الحالية (اختياري تغييرها لاحقًا)' : 'صورة غلاف المنجز *';
+    if (coverHeading) coverHeading.textContent = work ? 'صورة الغلاف الحالية (ستبقى كما هي أثناء التعديل)' : 'صورة غلاف المنجز *';
   }
 
   function beginAchievementEdit(workId) {
@@ -1478,7 +1478,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
           if (metadataError) throw metadataError;
         };
 
-        if (coverFile) await uploadAndRegister(coverFile, true, 1, files.length);
+        if (coverFile && !isEdit) await uploadAndRegister(coverFile, true, 1, files.length);
         for (let i = 0; i < files.length; i++) {
           await uploadAndRegister(files[i], false, i + 1, files.length);
         }
