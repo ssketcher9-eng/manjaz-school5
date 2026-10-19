@@ -475,6 +475,7 @@
         window.location.href = 'index.html#home';
       }
     });
+    const adminMode = params.get('admin') === '1';
     const ownerActions = document.querySelector('#workOwnerActions');
     const adminActions = document.querySelector('#workAdminActions');
     let currentWork = null;
