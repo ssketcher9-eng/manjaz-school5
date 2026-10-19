@@ -6,7 +6,7 @@
 
   <title>تفاصيل المنجز | بوابة المنجزات</title>
 
-  <link rel="stylesheet" href="style.css?v=20261019-edit-requests">
+  <link rel="stylesheet" href="style.css?v=20261019-inline-edit">
 
   <style>
     .work-page {
@@ -378,6 +378,19 @@
     .work-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
 
 
+    .achievement-edit-form { display:grid; gap:16px; max-width:850px; margin:0 auto; color:#193746; }
+    .achievement-edit-form h2 { margin:0; font-size:23px; color:#123e55; }
+    .edit-request-intro { margin:0; color:#61717b; line-height:1.8; }
+    .edit-request-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .edit-request-field { display:flex; flex-direction:column; gap:7px; min-width:0; font-size:14px; font-weight:600; color:#344854; }
+    .edit-request-field input,.edit-request-field select,.edit-request-field textarea { box-sizing:border-box; width:100%; min-width:0; padding:11px 12px; border:1px solid #cbd5dc; border-radius:9px; background:#fff; color:#183747; font:inherit; font-weight:400; }
+    .edit-request-field textarea { resize:vertical; line-height:1.8; }
+    .edit-request-field input:focus,.edit-request-field select:focus,.edit-request-field textarea:focus { outline:2px solid #9cc4ee; border-color:#2463b8; }
+    .edit-request-preserve-note { padding:12px 14px; border-radius:10px; background:#f1f7fc; color:#345b77; font-size:13px; line-height:1.8; }
+    .edit-request-actions { display:flex; flex-wrap:wrap; gap:10px; }
+    .edit-request-status { margin:0; color:#a33; overflow-wrap:anywhere; }
+    @media(max-width:600px) { .edit-request-grid { grid-template-columns:minmax(0,1fr); } .edit-request-actions { flex-direction:column; } .edit-request-actions .work-btn { width:100%; } }
+
     /* Hotfix: override legacy details styles that constrained the inner card */
     html, body, .work-page, .work-page-container { box-sizing:border-box !important; width:100% !important; max-width:none !important; min-width:0 !important; margin:0 !important; }
     .work-page { height:100% !important; min-height:0 !important; padding:0 !important; overflow:hidden !important; }
@@ -498,9 +511,124 @@
         alert('يمكنك اقتراح تعديل منجزك فقط بعد تسجيل الدخول.');
         return;
       }
-      if (window.parent !== window) window.parent.postMessage({ type: 'MANJAZ_EDIT_WORK', requestMode: 'proposal', workId }, window.location.origin);
-      else alert('افتحي تفاصيل المنجز من داخل بوابة منجز لإرسال اقتراح التعديل.');
+      renderAchievementEditForm();
     });
+
+    function renderAchievementEditForm() {
+      if (!currentWork || !currentUserId || String(currentWork.created_by || '') !== String(currentUserId)) {
+        alert('لا تملكين صلاحية اقتراح تعديل هذا المنجز.');
+        return;
+      }
+      const d = currentWork;
+      const field = (id, label, value, type = 'text', required = false) => `
+        <label class="edit-request-field" for="${id}">${label}${required ? ' *' : ''}
+          <input id="${id}" name="${id}" type="${type}" value="${escapeHTML(value || '')}" ${required ? 'required' : ''}>
+        </label>`;
+      details.innerHTML = `
+        <form id="achievementEditRequestForm" class="achievement-edit-form">
+          <h2>اقتراح تعديل المنجز</h2>
+          <p class="edit-request-intro">عدّلي البيانات المطلوبة هنا. لن تتغير البيانات المنشورة حتى تراجع الإدارة الطلب وتوافق عليه.</p>
+          <div class="edit-request-grid">
+            ${field('editTitle','عنوان المنجز',d.title,'text',true)}
+            <label class="edit-request-field" for="editCategory">القسم / المجال *
+              <select id="editCategory" name="category" required>
+                <option value="">اختاري المجال</option>
+                ${['تدريس','توجيه طلابي','نشاط طلابي','شراكة','منجز','نواتج تعلم','قيم','ورش','أولياء الأمور'].map(v => `<option value="${escapeHTML(v)}" ${d.category===v?'selected':''}>${escapeHTML(v)}</option>`).join('')}
+                ${d.category && !['تدريس','توجيه طلابي','نشاط طلابي','شراكة','منجز','نواتج تعلم','قيم','ورش','أولياء الأمور'].includes(d.category) ? `<option selected value="${escapeHTML(d.category)}">${escapeHTML(d.category)}</option>` : ''}
+              </select>
+            </label>
+            ${field('editDate','تاريخ التنفيذ',d.achievement_date,'date')}
+            ${field('editSubmitter','اسم المنفذ',d.submitter_name)}
+            ${field('editDepartment','القسم الإداري',d.department)}
+            ${field('editAudience','الفئة المستهدفة',d.audience)}
+            ${field('editEntity','الجهة المنفذة',d.entity)}
+          </div>
+          <label class="edit-request-field" for="editDescription">وصف المنجز *
+            <textarea id="editDescription" name="description" rows="5" required>${escapeHTML(d.description || '')}</textarea>
+          </label>
+          <div class="edit-request-grid">
+            <label class="edit-request-field" for="editGoal">الهدف من المنجز
+              <textarea id="editGoal" name="goal" rows="3">${escapeHTML(d.goal || '')}</textarea>
+            </label>
+            <label class="edit-request-field" for="editImpact">الأثر والنتائج
+              <textarea id="editImpact" name="impact" rows="3">${escapeHTML(d.impact || '')}</textarea>
+            </label>
+            <label class="edit-request-field" for="editShortDescription">نبذة مختصرة
+              <textarea id="editShortDescription" name="short_description" rows="3">${escapeHTML(d.short_description || '')}</textarea>
+            </label>
+          </div>
+          <div class="edit-request-preserve-note">صورة الغلاف والمرفقات الحالية ستبقى كما هي، ولا يمكن تغييرها من طلب التعديل هذا.</div>
+          <div class="edit-request-actions">
+            <button type="submit" class="work-btn work-btn-edit" id="submitAchievementEditRequest">إرسال طلب التعديل للمراجعة</button>
+            <button type="button" class="work-btn work-btn-home" id="cancelAchievementEditRequest">إلغاء والعودة للتفاصيل</button>
+          </div>
+          <p id="editRequestStatus" class="edit-request-status" role="status" aria-live="polite"></p>
+        </form>`;
+      document.querySelector('#cancelAchievementEditRequest')?.addEventListener('click', () => loadWork());
+      document.querySelector('#achievementEditRequestForm')?.addEventListener('submit', submitAchievementEditRequest);
+    }
+
+    async function submitAchievementEditRequest(event) {
+      event.preventDefault();
+      if (!currentWork || !currentUserId || String(currentWork.created_by || '') !== String(currentUserId)) {
+        alert('انتهت صلاحية الجلسة أو لا تملكين صلاحية تعديل هذا المنجز. سجّلي الدخول ثم حاولي مجددًا.');
+        return;
+      }
+      const form = event.currentTarget;
+      const submitButton = document.querySelector('#submitAchievementEditRequest');
+      const status = document.querySelector('#editRequestStatus');
+      const formData = new FormData(form);
+      const proposedData = {
+        title: String(formData.get('editTitle') || '').trim(),
+        category: String(formData.get('category') || '').trim(),
+        achievement_date: String(formData.get('editDate') || '') || null,
+        submitter_name: String(formData.get('editSubmitter') || '').trim(),
+        department: String(formData.get('editDepartment') || '').trim(),
+        audience: String(formData.get('editAudience') || '').trim(),
+        entity: String(formData.get('editEntity') || '').trim(),
+        description: String(formData.get('description') || '').trim(),
+        goal: String(formData.get('goal') || '').trim(),
+        impact: String(formData.get('impact') || '').trim(),
+        short_description: String(formData.get('short_description') || '').trim()
+      };
+      if (!proposedData.title || !proposedData.category || !proposedData.description) {
+        if (status) status.textContent = 'يرجى تعبئة عنوان المنجز والمجال والوصف.';
+        return;
+      }
+      submitButton.disabled = true;
+      submitButton.textContent = 'جارٍ إرسال الطلب…';
+      if (status) status.textContent = '';
+      try {
+        const { data: pending, error: pendingError } = await supabase
+          .from('achievement_edit_requests')
+          .select('id')
+          .eq('achievement_id', workId)
+          .eq('requested_by', currentUserId)
+          .eq('status', 'pending')
+          .limit(1);
+        if (pendingError) throw pendingError;
+        if (pending?.length) {
+          if (status) status.textContent = 'لديك طلب تعديل قيد المراجعة لهذا المنجز بالفعل. انتظري قرار الإدارة قبل إرسال طلب جديد.';
+          submitButton.disabled = false;
+          submitButton.textContent = 'إرسال طلب التعديل للمراجعة';
+          return;
+        }
+        const { error } = await supabase.from('achievement_edit_requests').insert({
+          achievement_id: Number(workId),
+          requested_by: currentUserId,
+          proposed_data: proposedData,
+          status: 'pending'
+        });
+        if (error) throw error;
+        alert('تم إرسال طلب التعديل للإدارة. ستبقى بيانات المنجز الحالية ظاهرة حتى اعتماد الطلب.');
+        await loadWork();
+      } catch (error) {
+        console.error('تعذر إرسال طلب تعديل المنجز:', error);
+        if (status) status.textContent = 'تعذر إرسال الطلب: ' + (error?.message || 'خطأ غير معروف');
+        submitButton.disabled = false;
+        submitButton.textContent = 'إرسال طلب التعديل للمراجعة';
+      }
+    }
     document.querySelector('#deleteWorkButton')?.addEventListener('click', async () => {
       if (!adminMode || !workId || !confirm('تأكيد حذف هذا المنجز؟')) return;
       const { error } = await supabase.from('achievements').delete().eq('id', workId);
