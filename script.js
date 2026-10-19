@@ -1279,6 +1279,74 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   ========================= */
 
   const achievementForm = $('#achievementForm');
+  let editingAchievementId = null;
+  let editingAchievementCoverUrl = '';
+
+  function setAchievementFormMode(work = null) {
+    editingAchievementId = work ? String(work.id) : null;
+    editingAchievementCoverUrl = work ? (work.cover_image_url || work.image_url || '') : '';
+    const heading = document.querySelector('#add h2');
+    const submit = achievementForm?.querySelector('button[type="submit"]');
+    const coverInput = $('#coverImage');
+    if (heading) heading.textContent = work ? 'تعديل المنجز' : 'إضافة منجز جديد';
+    if (submit) submit.textContent = work ? 'حفظ التعديلات وإرسال للمراجعة' : 'حفظ المنجز';
+    if (coverInput) coverInput.required = !work;
+    const coverHeading = coverInput?.closest('.media-upload-section')?.querySelector('h3');
+    if (coverHeading) coverHeading.textContent = work ? 'صورة الغلاف الحالية (اختياري تغييرها لاحقًا)' : 'صورة غلاف المنجز *';
+  }
+
+  function beginAchievementEdit(workId) {
+    const work = state.works.find(item => String(item.id) === String(workId));
+    if (!work || String(work.created_by || '') !== String(state.user?.id || '') || work.status !== 'needs_edit') {
+      alert('يمكنك تعديل منجزك فقط إذا أعادته الإدارة إليك للتعديل.');
+      return;
+    }
+    achievementForm?.reset();
+    if (mediaInputs) {
+      mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
+    }
+    $('#title').value = work.title || '';
+    $('#category').value = work.category || '';
+    $('#date').value = work.achievement_date || '';
+    $('#owner').value = work.submitter_name || '';
+    $('#description').value = work.description || '';
+    $('#goal').value = work.goal || '';
+    $('#impact').value = work.impact || '';
+    $('#audience').value = work.audience || '';
+    $('#entity').value = work.entity || '';
+    $('#achievementSection').value = work.department || 'works';
+    state.targetSection = work.department || 'works';
+    setAchievementFormMode(work);
+    goToPage('add');
+    $('#title')?.focus();
+  }
+
+  window.addEventListener('message', event => {
+    if (event.origin !== window.location.origin || event.data?.type !== 'MANJAZ_EDIT_WORK') return;
+    if (state.role === 'admin') {
+      const work = state.works.find(item => String(item.id) === String(event.data.workId));
+      if (work) {
+        achievementForm?.reset();
+        $('#title').value = work.title || '';
+        $('#category').value = work.category || '';
+        $('#date').value = work.achievement_date || '';
+        $('#owner').value = work.submitter_name || '';
+        $('#description').value = work.description || '';
+        $('#goal').value = work.goal || '';
+        $('#impact').value = work.impact || '';
+        $('#audience').value = work.audience || '';
+        $('#entity').value = work.entity || '';
+        $('#achievementSection').value = work.department || 'works';
+        state.targetSection = work.department || 'works';
+        setAchievementFormMode(work);
+        goToPage('add');
+        document.querySelector('#workDetailsModal .work-details-modal-close')?.click();
+      }
+      return;
+    }
+    beginAchievementEdit(event.data.workId);
+    document.querySelector('#workDetailsModal .work-details-modal-close')?.click();
+  });
 
   // السماح بإضافة مجموعات متعددة من الوسائط وحذف المجموعة قبل الحفظ.
   const mediaInputs = $('#mediaInputs');
@@ -1293,6 +1361,15 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
   mediaInputs?.addEventListener('click', event => {
     const removeButton = event.target.closest('.remove-media-button');
     if (removeButton) removeButton.closest('.media-input-row')?.remove();
+  });
+
+  // زر تعديل مباشر يظهر لصاحبة المنجز عند إعادته للتعديل.
+  $('#allWorks')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-edit-achievement]');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    beginAchievementEdit(button.dataset.editAchievement);
   });
 
   if (achievementForm) {
@@ -1313,19 +1390,11 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       const files = Array.from(document.querySelectorAll('.achievement-media-input'))
         .flatMap(input => Array.from(input.files || []));
 
-      if (!title) {
-        alert('اكتبي عنوان المنجز أولًا.');
+      if (!title || !category || !description) {
+        alert('أكملي عنوان المنجز والمجال والوصف قبل الحفظ.');
         return;
       }
-      if (!category) {
-        alert('اختاري القسم الذي يتبعه المنجز.');
-        return;
-      }
-      if (!description) {
-        alert('اكتبي وصف المنجز.');
-        return;
-      }
-      if (!coverFile) {
+      if (!editingAchievementId && !coverFile) {
         alert('صورة غلاف المنجز إلزامية. اختاري صورة قبل الحفظ.');
         $('#coverImage')?.focus();
         return;
@@ -1333,11 +1402,11 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
       const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
       const mediaTypes = [...imageTypes, 'application/pdf', 'video/mp4', 'video/webm', 'video/quicktime'];
-      if (!imageTypes.includes(coverFile.type)) {
-        alert('صورة الغلاف يجب أن تكون صورة بصيغة JPG أو PNG أو WEBP فقط.');
+      if (coverFile && !imageTypes.includes(coverFile.type)) {
+        alert('صورة الغلاف يجب أن تكون بصيغة JPG أو PNG أو WEBP فقط.');
         return;
       }
-      if (coverFile.size > 10 * 1024 * 1024) {
+      if (coverFile && coverFile.size > 10 * 1024 * 1024) {
         alert('حجم صورة الغلاف أكبر من 10 MB.');
         return;
       }
@@ -1354,52 +1423,56 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
       const owner = ownerInput || state.profile?.full_name || state.user?.email || '';
       const button = achievementForm.querySelector('button[type="submit"]');
+      const isEdit = Boolean(editingAchievementId);
       if (button) {
         button.disabled = true;
-        button.textContent = 'جارٍ الحفظ...';
+        button.textContent = isEdit ? 'جارٍ حفظ التعديلات...' : 'جارٍ الحفظ...';
       }
 
       try {
-        const payload = {
-          title, category, achievement_date: date, submitter_name: owner,
-          description, goal, impact, audience, entity, department: sectionId,
-          created_by: state.user?.id ?? null, status: 'pending'
-        };
-
-        const { data: achievement, error: saveError } = await supabase
-          .from('achievements')
-          .insert(payload)
-          .select()
-          .single();
-        if (saveError) throw saveError;
+        let achievement;
+        if (isEdit) {
+          const { data, error } = await supabase
+            .from('achievements')
+            .update({
+              title, category, achievement_date: date, submitter_name: owner,
+              description, goal, impact, audience, entity, department: sectionId,
+              status: 'pending', updated_at: new Date().toISOString()
+            })
+            .eq('id', editingAchievementId)
+            .select()
+            .single();
+          if (error) throw error;
+          achievement = data;
+        } else {
+          const payload = {
+            title, category, achievement_date: date, submitter_name: owner,
+            description, goal, impact, audience, entity, department: sectionId,
+            created_by: state.user?.id ?? null, status: 'pending'
+          };
+          const { data, error } = await supabase.from('achievements').insert(payload).select().single();
+          if (error) throw error;
+          achievement = data;
+        }
 
         const uploadAndRegister = async (originalFile, isCover, position, total) => {
           if (button) button.textContent = isCover
-            ? 'جارٍ تحسين ورفع صورة الغلاف...'
+            ? 'جارٍ رفع صورة الغلاف...'
             : `جارٍ رفع الوسائط (${position}/${total})`;
-
           const file = await optimizeAchievementImage(originalFile);
           const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
           const filePath = `public/${achievement.id}/${crypto.randomUUID()}-${safeName}`;
-          const { error: uploadError } = await supabase.storage
-            .from('achievement-files')
+          const { error: uploadError } = await supabase.storage.from('achievement-files')
             .upload(filePath, file, { contentType: file.type, upsert: false });
           if (uploadError) throw uploadError;
-
-          const { error: metadataError } = await supabase
-            .from('achievement_attachments')
-            .insert({
-              achievement_id: achievement.id,
-              file_name: originalFile.name,
-              file_path: filePath,
-              mime_type: file.type,
-              uploaded_by: state.user?.id ?? null,
-              is_cover: isCover
-            });
+          const { error: metadataError } = await supabase.from('achievement_attachments').insert({
+            achievement_id: achievement.id, file_name: originalFile.name, file_path: filePath,
+            mime_type: file.type, uploaded_by: state.user?.id ?? null, is_cover: isCover
+          });
           if (metadataError) throw metadataError;
         };
 
-        await uploadAndRegister(coverFile, true, 1, files.length);
+        if (coverFile) await uploadAndRegister(coverFile, true, 1, files.length);
         for (let i = 0; i < files.length; i++) {
           await uploadAndRegister(files[i], false, i + 1, files.length);
         }
@@ -1411,17 +1484,20 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         const sectionInput = $('#achievementSection');
         if (sectionInput) sectionInput.value = 'works';
         state.targetSection = 'works';
+        setAchievementFormMode(null);
 
         await loadWorks();
         goToPage(sectionId);
-        alert('تم حفظ المنجز وصورة غلافه والوسائط الإضافية بنجاح، وهو الآن قيد المراجعة.');
+        alert(isEdit
+          ? 'تم حفظ التعديلات وإرسال المنجز إلى الإدارة للمراجعة. احتفظنا بالمرفقات الحالية.'
+          : 'تم حفظ المنجز وصورة غلافه والوسائط الإضافية بنجاح، وهو الآن قيد المراجعة.');
       } catch (error) {
         console.error(error);
         alert(error.message || 'تعذر حفظ المنجز أو رفع المرفقات.');
       } finally {
         if (button) {
           button.disabled = false;
-          button.textContent = 'حفظ المنجز';
+          button.textContent = editingAchievementId ? 'حفظ التعديلات وإرسال للمراجعة' : 'حفظ المنجز';
         }
       }
     });
