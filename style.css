@@ -691,3 +691,11 @@ button:focus-visible,a:focus-visible{outline:3px solid #bd78f5!important;outline
 #aboutHeroPortrait[hidden] {
   display: none !important;
 }
+
+/* مراجعة طلبات تعديل المنجزات داخل لوحة الإدارة */
+.edit-request-diff{display:grid;gap:10px;margin-top:14px}
+.edit-request-field{padding:11px;border:1px solid #dce2f5;border-radius:10px;background:#f9faff;min-width:0}
+.edit-request-field>strong{display:block;margin-bottom:7px;color:#3f4d8e}
+.edit-request-old,.edit-request-new{padding:5px 0;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.edit-request-old{color:#7b5560}
+.edit-request-new{color:#17663a}
