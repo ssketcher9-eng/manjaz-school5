@@ -1224,6 +1224,12 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
             </small>
 
             ${
+              state.user?.id && String(work.created_by || '') === String(state.user.id) && work.status === 'needs_edit'
+                ? `<button class="primary" type="button" data-edit-achievement="${escapeHTML(work.id)}">تعديل المنجز وإعادة إرساله</button>`
+                : ''
+            }
+
+            ${
               state.role === 'admin'
                 ? `
                   <br>
