@@ -1624,28 +1624,51 @@ $('#allWorks')?.addEventListener(
     if (!request || request.status !== 'pending') { alert('هذا الطلب لم يعد بانتظار المراجعة.'); await loadWorks(); return; }
     const work = state.works.find(item => String(item.id) === String(request.achievement_id));
     if (!work) { alert('تعذر العثور على المنجز المرتبط بالطلب.'); return; }
-    const { data: changed, error: requestError } = await supabase.from('achievement_edit_requests')
-      .update({ status: accept ? 'accepted' : 'rejected', reviewed_by: state.user.id, reviewed_at: new Date().toISOString() })
-      .eq('id', requestId).eq('status', 'pending').select('id').maybeSingle();
-    if (requestError || !changed) { console.error(requestError); alert('تعذر تسجيل قرار المراجعة. ربما تمت مراجعة الطلب مسبقًا.'); await loadWorks(); return; }
-    if (accept) {
-      const proposed = request.proposed_data || {};
-      const keys = ['title','category','achievement_date','submitter_name','description','goal','impact','audience','entity','department'];
-      const changes = {};
-      for (const key of keys) if (Object.prototype.hasOwnProperty.call(proposed, key)) changes[key] = proposed[key];
-      changes.updated_at = new Date().toISOString();
-      changes.status = ['published','approved'].includes(work.status) ? 'published' : (work.status || 'pending');
-      const { error } = await supabase.from('achievements').update(changes).eq('id', work.id);
-      if (error) {
+
+    // الرفض يسجل القرار فقط، ولا يلمس بيانات المنجز الأصلية.
+    if (!accept) {
+      const { data: changed, error } = await supabase.from('achievement_edit_requests')
+        .update({ status: 'rejected', reviewed_by: state.user.id, reviewed_at: new Date().toISOString() })
+        .eq('id', requestId).eq('status', 'pending').select('id').maybeSingle();
+      if (error || !changed) {
         console.error(error);
-        await supabase.from('achievement_edit_requests').update({ status: 'pending', reviewed_by: null, reviewed_at: null }).eq('id', requestId);
-        alert('تعذر تطبيق التعديل؛ أُعيد الطلب إلى قائمة المراجعة.');
+        alert('تعذر تسجيل رفض الطلب. ربما تمت مراجعته مسبقًا.');
         await loadWorks();
         return;
       }
+      await loadWorks();
+      alert('تم رفض التعديل، وبقي المنجز الأصلي كما هو.');
+      return;
     }
+
+    // طبّق البيانات أولًا؛ لا نسجّل قبول الطلب إلا بعد نجاح تحديث المنجز.
+    const proposed = request.proposed_data || {};
+    const keys = ['title','category','achievement_date','submitter_name','description','goal','impact','audience','entity','department'];
+    const changes = {};
+    for (const key of keys) if (Object.prototype.hasOwnProperty.call(proposed, key)) changes[key] = proposed[key];
+    changes.updated_at = new Date().toISOString();
+    changes.status = ['published','approved'].includes(work.status) ? 'published' : (work.status || 'pending');
+    const { data: updatedWork, error: updateError } = await supabase.from('achievements')
+      .update(changes).eq('id', work.id).select('id').maybeSingle();
+    if (updateError || !updatedWork) {
+      console.error(updateError);
+      alert('تعذر تطبيق التعديل على المنجز. بقي الطلب بانتظار المراجعة والمنجز دون تغيير.');
+      await loadWorks();
+      return;
+    }
+
+    const { data: changed, error: requestError } = await supabase.from('achievement_edit_requests')
+      .update({ status: 'accepted', reviewed_by: state.user.id, reviewed_at: new Date().toISOString() })
+      .eq('id', requestId).eq('status', 'pending').select('id').maybeSingle();
+    if (requestError || !changed) {
+      console.error(requestError);
+      alert('طُبّقت البيانات المقترحة، لكن تعذر تحديث حالة الطلب. راجعي الطلب يدويًا قبل اتخاذ أي قرار إضافي.');
+      await loadWorks();
+      return;
+    }
+
     await loadWorks();
-    alert(accept ? 'تم قبول التعديل وتحديث بيانات المنجز الأصلي.' : 'تم رفض التعديل، وبقي المنجز الأصلي كما هو.');
+    alert('تم قبول التعديل وتحديث بيانات المنجز الأصلي.');
   }
 
   function renderAdminPanel() {
