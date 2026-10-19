@@ -17,6 +17,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     role: 'guest',
     profile: null,
     works: [],
+    editRequests: [],
     targetSection: 'works'
   };
 
@@ -1102,7 +1103,18 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     }
 
     renderWorks();
+    await loadAchievementEditRequests();
     renderAdminPanel();
+  }
+
+
+  async function loadAchievementEditRequests() {
+    if (state.role !== 'admin') { state.editRequests = []; return; }
+    const { data, error } = await supabase.from('achievement_edit_requests')
+      .select('id,achievement_id,requested_by,proposed_data,status,created_at')
+      .eq('status', 'pending').order('created_at', { ascending: false });
+    if (error) { console.error('تعذر تحميل طلبات تعديل المنجزات:', error); state.editRequests = []; return; }
+    state.editRequests = data || [];
   }
 
   function renderSectionCards() {
@@ -1284,7 +1296,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
      إضافة منجز
   ========================= */
 
-  const achievementForm = $('#achievementForm');
+  // لا نعدل سجل المنجز الأصلي مباشرة؛ التعديل يُحفظ كطلب منفصل وينتظر قرار الإدارة.
   let editingAchievementId = null;
   let editingAchievementCoverUrl = '';
 
@@ -1292,25 +1304,32 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     editingAchievementId = work ? String(work.id) : null;
     editingAchievementCoverUrl = work ? (work.cover_image_url || work.image_url || '') : '';
     const heading = document.querySelector('#add h2');
-    const submit = achievementForm?.querySelector('button[type="submit"]');
+    const submit = $('#achievementForm button[type="submit"]');
     const coverInput = $('#coverImage');
-    if (heading) heading.textContent = work ? 'تعديل المنجز' : 'إضافة منجز جديد';
-    if (submit) submit.textContent = work ? 'حفظ التعديلات وإرسال للمراجعة' : 'حفظ المنجز';
+    if (heading) heading.textContent = work ? 'اقتراح تعديل المنجز' : 'إضافة منجز جديد';
+    if (submit) submit.textContent = work ? 'إرسال التعديل للمراجعة' : 'حفظ المنجز';
     if (coverInput) { coverInput.required = !work; coverInput.disabled = Boolean(work); }
     const coverHeading = coverInput?.closest('.media-upload-section')?.querySelector('h3');
-    if (coverHeading) coverHeading.textContent = work ? 'صورة الغلاف الحالية (ستبقى كما هي أثناء التعديل)' : 'صورة غلاف المنجز *';
+    if (coverHeading) coverHeading.textContent = work ? 'صورة الغلاف الحالية (لن تتغير)' : 'صورة غلاف المنجز *';
   }
 
-  function beginAchievementEdit(workId) {
+  async function beginAchievementEdit(workId) {
     const work = state.works.find(item => String(item.id) === String(workId));
-    if (!work || String(work.created_by || '') !== String(state.user?.id || '') || work.status !== 'needs_edit') {
-      alert('يمكنك تعديل منجزك فقط إذا أعادته الإدارة إليك للتعديل.');
+    if (!work || !state.user?.id || String(work.created_by || '') !== String(state.user.id)) {
+      alert('يمكنك اقتراح تعديل منجزك أنتِ فقط بعد تسجيل الدخول.');
       return;
     }
-    achievementForm?.reset();
-    if (mediaInputs) {
-      mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
-    }
+    const { data: existingRequests, error: requestCheckError } = await supabase.from('achievement_edit_requests')
+      .select('id,status').eq('achievement_id', workId).eq('requested_by', state.user.id).eq('status', 'pending').limit(1);
+    if (requestCheckError) { console.error(requestCheckError); alert('تعذر التحقق من طلبات التعديل الحالية. حاولي مرة أخرى.'); return; }
+    if (existingRequests?.length) { alert('يوجد طلب تعديل لهذا المنجز بانتظار الإدارة بالفعل.'); return; }
+    editingAchievementId = String(work.id);
+    editingAchievementCoverUrl = work.cover_image_url || work.image_url || '';
+    const form = $('#achievementForm');
+    if (!form) return;
+    form.reset();
+    const media = $('#mediaInputs');
+    if (media) media.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات جديدة اختيارية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
     $('#title').value = work.title || '';
     $('#category').value = work.category || '';
     $('#date').value = work.achievement_date || '';
@@ -1329,32 +1348,27 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
 
   window.addEventListener('message', event => {
     if (event.origin !== window.location.origin || event.data?.type !== 'MANJAZ_EDIT_WORK') return;
-    if (state.role === 'admin') {
-      const work = state.works.find(item => String(item.id) === String(event.data.workId));
-      if (work) {
-        achievementForm?.reset();
-        $('#title').value = work.title || '';
-        $('#category').value = work.category || '';
-        $('#date').value = work.achievement_date || '';
-        $('#owner').value = work.submitter_name || '';
-        $('#description').value = work.description || '';
-        $('#goal').value = work.goal || '';
-        $('#impact').value = work.impact || '';
-        $('#audience').value = work.audience || '';
-        $('#entity').value = work.entity || '';
-        $('#achievementSection').value = work.department || 'works';
-        state.targetSection = work.department || 'works';
-        setAchievementFormMode(work);
-        goToPage('add');
-        document.querySelector('#workDetailsModal .work-details-modal-close')?.click();
-      }
-      return;
-    }
-    beginAchievementEdit(event.data.workId);
+    if (event.data?.requestMode === 'proposal') { beginAchievementEdit(event.data.workId); return; }
+    if (state.role !== 'admin') return;
+    const work = state.works.find(item => String(item.id) === String(event.data.workId));
+    if (!work) return;
+    $('#achievementForm')?.reset();
+    $('#title').value = work.title || '';
+    $('#category').value = work.category || '';
+    $('#date').value = work.achievement_date || '';
+    $('#owner').value = work.submitter_name || '';
+    $('#description').value = work.description || '';
+    $('#goal').value = work.goal || '';
+    $('#impact').value = work.impact || '';
+    $('#audience').value = work.audience || '';
+    $('#entity').value = work.entity || '';
+    $('#achievementSection').value = work.department || 'works';
+    state.targetSection = work.department || 'works';
+    setAchievementFormMode(null);
+    goToPage('add');
     document.querySelector('#workDetailsModal .work-details-modal-close')?.click();
   });
 
-  // السماح بإضافة مجموعات متعددة من الوسائط وحذف المجموعة قبل الحفظ.
   const mediaInputs = $('#mediaInputs');
   $('#addMediaButton')?.addEventListener('click', () => {
     if (!mediaInputs) return;
@@ -1363,29 +1377,18 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     row.innerHTML = '<input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button>';
     mediaInputs.appendChild(row);
   });
-
   mediaInputs?.addEventListener('click', event => {
     const removeButton = event.target.closest('.remove-media-button');
     if (removeButton) removeButton.closest('.media-input-row')?.remove();
   });
 
-  // زر تعديل مباشر يظهر لصاحبة المنجز عند إعادته للتعديل.
-  $('#allWorks')?.addEventListener('click', event => {
-    const button = event.target.closest('[data-edit-achievement]');
-    if (!button) return;
-    event.preventDefault();
-    event.stopPropagation();
-    beginAchievementEdit(button.dataset.editAchievement);
-  });
-
-  if (achievementForm) {
-    achievementForm.addEventListener('submit', async event => {
+  if ($('#achievementForm')) {
+    $('#achievementForm').addEventListener('submit', async event => {
       event.preventDefault();
-
       const title = $('#title')?.value.trim();
       const category = $('#category')?.value;
       const date = $('#date')?.value || null;
-      const ownerInput = $('#owner')?.value.trim();
+      const owner = $('#owner')?.value.trim() || state.profile?.full_name || state.user?.email || '';
       const description = $('#description')?.value.trim();
       const goal = $('#goal')?.value.trim() || '';
       const impact = $('#impact')?.value.trim() || '';
@@ -1393,121 +1396,65 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       const entity = $('#entity')?.value.trim() || '';
       const sectionId = state.targetSection || $('#achievementSection')?.value || 'works';
       const coverFile = $('#coverImage')?.files?.[0] || null;
-      const files = Array.from(document.querySelectorAll('.achievement-media-input'))
-        .flatMap(input => Array.from(input.files || []));
-
-      if (!title || !category || !description) {
-        alert('أكملي عنوان المنجز والمجال والوصف قبل الحفظ.');
-        return;
-      }
-      if (!editingAchievementId && !coverFile) {
-        alert('صورة غلاف المنجز إلزامية. اختاري صورة قبل الحفظ.');
-        $('#coverImage')?.focus();
-        return;
-      }
-
+      const files = Array.from(document.querySelectorAll('.achievement-media-input')).flatMap(input => Array.from(input.files || []));
+      const isEditProposal = Boolean(editingAchievementId);
+      if (!title || !category || !description) { alert('أكملي عنوان المنجز والمجال والوصف قبل الحفظ.'); return; }
+      if (!isEditProposal && !coverFile) { alert('صورة غلاف المنجز إلزامية. اختاري صورة قبل الحفظ.'); $('#coverImage')?.focus(); return; }
+      if (isEditProposal && (!state.user?.id || state.role === 'guest')) { alert('سجلي الدخول أولًا لإرسال طلب تعديل.'); return; }
       const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
       const mediaTypes = [...imageTypes, 'application/pdf', 'video/mp4', 'video/webm', 'video/quicktime'];
-      if (coverFile && !imageTypes.includes(coverFile.type)) {
-        alert('صورة الغلاف يجب أن تكون بصيغة JPG أو PNG أو WEBP فقط.');
-        return;
-      }
-      if (coverFile && coverFile.size > 10 * 1024 * 1024) {
-        alert('حجم صورة الغلاف أكبر من 10 MB.');
-        return;
-      }
+      if (coverFile && !imageTypes.includes(coverFile.type)) { alert('صورة الغلاف يجب أن تكون بصيغة JPG أو PNG أو WEBP فقط.'); return; }
+      if (coverFile && coverFile.size > 10 * 1024 * 1024) { alert('حجم صورة الغلاف أكبر من 10 MB.'); return; }
       for (const file of files) {
-        if (!mediaTypes.includes(file.type)) {
-          alert(`نوع الملف غير مسموح: ${file.name}`);
-          return;
-        }
-        if (file.size > 10 * 1024 * 1024) {
-          alert(`حجم الملف أكبر من 10 MB: ${file.name}`);
-          return;
-        }
+        if (!mediaTypes.includes(file.type)) { alert('نوع الملف غير مسموح: ' + file.name); return; }
+        if (file.size > 10 * 1024 * 1024) { alert('حجم الملف أكبر من 10 MB: ' + file.name); return; }
       }
-
-      const owner = ownerInput || state.profile?.full_name || state.user?.email || '';
-      const button = achievementForm.querySelector('button[type="submit"]');
-      const isEdit = Boolean(editingAchievementId);
-      if (button) {
-        button.disabled = true;
-        button.textContent = isEdit ? 'جارٍ حفظ التعديلات...' : 'جارٍ الحفظ...';
-      }
-
+      const form = $('#achievementForm');
+      const button = form.querySelector('button[type="submit"]');
+      if (button) { button.disabled = true; button.textContent = isEditProposal ? 'جارٍ إرسال طلب التعديل...' : 'جارٍ حفظ المنجز...'; }
       try {
-        let achievement;
-        if (isEdit) {
-          const { data, error } = await supabase
-            .from('achievements')
-            .update({
-              title, category, achievement_date: date, submitter_name: owner,
-              description, goal, impact, audience, entity, department: sectionId,
-              status: 'pending', updated_at: new Date().toISOString()
-            })
-            .eq('id', editingAchievementId)
-            .select()
-            .single();
+        if (isEditProposal) {
+          const work = state.works.find(item => String(item.id) === String(editingAchievementId));
+          if (!work || String(work.created_by || '') !== String(state.user.id)) throw new Error('لا يمكن تعديل هذا المنجز من هذا الحساب.');
+          const proposedData = { title, category, achievement_date: date, submitter_name: owner, description, goal, impact, audience, entity, department: sectionId };
+          const { error } = await supabase.from('achievement_edit_requests').insert({ achievement_id: editingAchievementId, requested_by: state.user.id, proposed_data: proposedData, status: 'pending' });
           if (error) throw error;
-          achievement = data;
-        } else {
-          const payload = {
-            title, category, achievement_date: date, submitter_name: owner,
-            description, goal, impact, audience, entity, department: sectionId,
-            created_by: state.user?.id ?? null, status: 'pending'
-          };
-          const { data, error } = await supabase.from('achievements').insert(payload).select().single();
-          if (error) throw error;
-          achievement = data;
+          form.reset();
+          if (mediaInputs) mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات جديدة اختيارية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
+          setAchievementFormMode(null); editingAchievementId = null; editingAchievementCoverUrl = '';
+          await loadWorks();
+          alert('تم إرسال اقتراح التعديل إلى الإدارة. سيبقى المنجز الأصلي كما هو حتى قبول الطلب.');
+          goToPage(sectionId);
+          return;
         }
-
+        const payload = { title, category, achievement_date: date, submitter_name: owner, description, goal, impact, audience, entity, department: sectionId, created_by: state.user?.id ?? null, status: 'pending' };
+        const { data: achievement, error } = await supabase.from('achievements').insert(payload).select().single();
+        if (error) throw error;
         const uploadAndRegister = async (originalFile, isCover, position, total) => {
-          if (button) button.textContent = isCover
-            ? 'جارٍ رفع صورة الغلاف...'
-            : `جارٍ رفع الوسائط (${position}/${total})`;
+          if (button) button.textContent = isCover ? 'جارٍ رفع صورة الغلاف...' : 'جارٍ رفع الوسائط (' + position + '/' + total + ')';
           const file = await optimizeAchievementImage(originalFile);
           const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-          const filePath = `public/${achievement.id}/${crypto.randomUUID()}-${safeName}`;
-          const { error: uploadError } = await supabase.storage.from('achievement-files')
-            .upload(filePath, file, { contentType: file.type, upsert: false });
+          const filePath = 'public/' + achievement.id + '/' + crypto.randomUUID() + '-' + safeName;
+          const { error: uploadError } = await supabase.storage.from('achievement-files').upload(filePath, file, { contentType: file.type, upsert: false });
           if (uploadError) throw uploadError;
-          const { error: metadataError } = await supabase.from('achievement_attachments').insert({
-            achievement_id: achievement.id, file_name: originalFile.name, file_path: filePath,
-            mime_type: file.type, uploaded_by: state.user?.id ?? null, is_cover: isCover
-          });
+          const { error: metadataError } = await supabase.from('achievement_attachments').insert({ achievement_id: achievement.id, file_name: originalFile.name, file_path: filePath, mime_type: file.type, uploaded_by: state.user?.id ?? null, is_cover: isCover });
           if (metadataError) throw metadataError;
         };
-
-        if (coverFile && !isEdit) await uploadAndRegister(coverFile, true, 1, files.length);
-        for (let i = 0; i < files.length; i++) {
-          await uploadAndRegister(files[i], false, i + 1, files.length);
-        }
-
-        achievementForm.reset();
-        if (mediaInputs) {
-          mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
-        }
-        const sectionInput = $('#achievementSection');
-        if (sectionInput) sectionInput.value = 'works';
-        state.targetSection = 'works';
-        setAchievementFormMode(null);
-
-        await loadWorks();
-        goToPage(sectionId);
-        alert(isEdit
-          ? 'تم حفظ التعديلات وإرسال المنجز إلى الإدارة للمراجعة. احتفظنا بالمرفقات الحالية.'
-          : 'تم حفظ المنجز وصورة غلافه والوسائط الإضافية بنجاح، وهو الآن قيد المراجعة.');
+        await uploadAndRegister(coverFile, true, 1, files.length);
+        for (let i = 0; i < files.length; i++) await uploadAndRegister(files[i], false, i + 1, files.length);
+        form.reset();
+        if (mediaInputs) mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
+        $('#achievementSection').value = 'works'; state.targetSection = 'works'; setAchievementFormMode(null);
+        await loadWorks(); goToPage(sectionId);
+        alert('تم حفظ المنجز وصورة غلافه والوسائط الإضافية بنجاح، وهو الآن قيد المراجعة.');
       } catch (error) {
-        console.error(error);
-        alert(error.message || 'تعذر حفظ المنجز أو رفع المرفقات.');
+        console.error(error); alert(error.message || 'تعذر حفظ المنجز.');
       } finally {
-        if (button) {
-          button.disabled = false;
-          button.textContent = editingAchievementId ? 'حفظ التعديلات وإرسال للمراجعة' : 'حفظ المنجز';
-        }
+        if (button) { button.disabled = false; button.textContent = editingAchievementId ? 'إرسال التعديل للمراجعة' : 'حفظ المنجز'; }
       }
     });
   }
+
   /* =========================
      حذف المنجز للمديرة
   ========================= */
@@ -1671,144 +1618,70 @@ $('#allWorks')?.addEventListener(
      لوحة الإدارة
   ========================= */
 
+  async function reviewAchievementEditRequest(requestId, accept) {
+    if (state.role !== 'admin' || !state.user?.id) { alert('هذه العملية متاحة للإدارة فقط.'); return; }
+    const request = state.editRequests.find(item => String(item.id) === String(requestId));
+    if (!request || request.status !== 'pending') { alert('هذا الطلب لم يعد بانتظار المراجعة.'); await loadWorks(); return; }
+    const work = state.works.find(item => String(item.id) === String(request.achievement_id));
+    if (!work) { alert('تعذر العثور على المنجز المرتبط بالطلب.'); return; }
+    const { data: changed, error: requestError } = await supabase.from('achievement_edit_requests')
+      .update({ status: accept ? 'accepted' : 'rejected', reviewed_by: state.user.id, reviewed_at: new Date().toISOString() })
+      .eq('id', requestId).eq('status', 'pending').select('id').maybeSingle();
+    if (requestError || !changed) { console.error(requestError); alert('تعذر تسجيل قرار المراجعة. ربما تمت مراجعة الطلب مسبقًا.'); await loadWorks(); return; }
+    if (accept) {
+      const proposed = request.proposed_data || {};
+      const keys = ['title','category','achievement_date','submitter_name','description','goal','impact','audience','entity','department'];
+      const changes = {};
+      for (const key of keys) if (Object.prototype.hasOwnProperty.call(proposed, key)) changes[key] = proposed[key];
+      changes.updated_at = new Date().toISOString();
+      changes.status = ['published','approved'].includes(work.status) ? 'published' : (work.status || 'pending');
+      const { error } = await supabase.from('achievements').update(changes).eq('id', work.id);
+      if (error) {
+        console.error(error);
+        await supabase.from('achievement_edit_requests').update({ status: 'pending', reviewed_by: null, reviewed_at: null }).eq('id', requestId);
+        alert('تعذر تطبيق التعديل؛ أُعيد الطلب إلى قائمة المراجعة.');
+        await loadWorks();
+        return;
+      }
+    }
+    await loadWorks();
+    alert(accept ? 'تم قبول التعديل وتحديث بيانات المنجز الأصلي.' : 'تم رفض التعديل، وبقي المنجز الأصلي كما هو.');
+  }
+
   function renderAdminPanel() {
     const adminPage = $('#admin');
-
-    if (!adminPage) return;
-
-    if (state.role !== 'admin') {
-      return;
-    }
-
-    let manager =
-      $('#adminManager');
-
-    if (!manager) {
-      manager =
-        document.createElement('div');
-
-      manager.id =
-        'adminManager';
-
-      manager.className =
-        'admin-manager';
-
-      adminPage.appendChild(manager);
-    }
-
-    manager.innerHTML = `
-      <h3>إدارة المنجزات</h3>
-
-      <p>
-        إجمالي المنجزات المسجلة:
-        <strong>
-          ${state.works.length}
-        </strong>
-      </p>
-
-      <div class="admin-manager-list">
-        ${
-          state.works.length
-            ? state.works
-                .slice(0, 10)
-                .map(work => `
-                  <div class="admin-manager-item">
-
-                    <h4>
-                      ${escapeHTML(
-                        work.title ||
-                        'بدون عنوان'
-                      )}
-                    </h4>
-
-                    <small>
-                      ${escapeHTML(
-                        work.submitter_name || work.owner || ''
-                      )}
-                    </small>
-
-                    <div class="admin-review-actions">
-                      <button class="admin-status-btn approve" data-status-id="${escapeHTML(work.id)}" data-status-value="published" type="button">اعتماد</button>
-                      <button class="admin-status-btn revise" data-status-id="${escapeHTML(work.id)}" data-status-value="needs_edit" type="button">إعادة للتعديل</button>
-                    </div>
-                    <br>
-
-                    <button
-                      class="admin-delete-btn"
-                      data-admin-delete-id="${escapeHTML(
-                        work.id
-                      )}"
-                      type="button"
-                    >
-                      حذف
-                    </button>
-
-                  </div>
-                `)
-                .join('')
-            : `
-              <div class="empty">
-                لا توجد منجزات حتى الآن.
-              </div>
-            `
-        }
-      </div>
-    `;
-
-    manager.querySelectorAll('[data-status-id]').forEach(button => {
-      button.addEventListener('click', async () => {
-        const id = button.dataset.statusId;
-        const status = button.dataset.statusValue;
-        button.disabled = true;
-        const { error } = await supabase.from('achievements').update({ status }).eq('id', id);
-        if (error) {
-          console.error(error);
-          alert('تعذر تحديث الحالة. تأكدي من صلاحيات التعديل في Supabase.');
-          button.disabled = false;
-          return;
-        }
-        await loadWorks();
-      });
-    });
-
-    manager
-      .querySelectorAll(
-        '[data-admin-delete-id]'
-      )
-      .forEach(button => {
-        button.addEventListener(
-          'click',
-          async () => {
-            const id =
-              button.dataset
-                .adminDeleteId;
-
-            if (
-              !confirm(
-                'هل أنتِ متأكدة من حذف هذا المنجز؟'
-              )
-            ) {
-              return;
-            }
-
-            const { error } =
-              await supabase
-                .from('achievements')
-                .delete()
-                .eq('id', id);
-
-            if (error) {
-              alert(
-                error.message ||
-                'تعذر الحذف.'
-              );
-              return;
-            }
-
-            await loadWorks();
-          }
-        );
-      });
+    if (!adminPage || state.role !== 'admin') return;
+    let manager = $('#adminManager');
+    if (!manager) { manager = document.createElement('div'); manager.id = 'adminManager'; manager.className = 'admin-manager'; adminPage.appendChild(manager); }
+    const requestCards = state.editRequests.length ? state.editRequests.map(request => {
+      const work = state.works.find(item => String(item.id) === String(request.achievement_id));
+      if (!work) return '';
+      const proposed = request.proposed_data || {};
+      const fields = [['العنوان','title'],['المجال','category'],['التاريخ','achievement_date'],['المنفذ','submitter_name'],['الوصف','description'],['الهدف','goal'],['الأثر','impact'],['الفئة المستهدفة','audience'],['الجهة المنفذة','entity']];
+      const diff = fields.filter(([,key]) => String(proposed[key] ?? '') !== String(work[key] ?? ''));
+      return `<article class="admin-manager-item"><h4>${escapeHTML(work.title || 'منجز بلا عنوان')}</h4><small>صاحبة المنجز: ${escapeHTML(work.submitter_name || 'غير محدد')} · ${escapeHTML(new Date(request.created_at).toLocaleString('ar-SA'))}</small>
+        <div class="edit-request-diff">${diff.length ? diff.map(([label,key]) => `<div class="edit-request-field"><strong>${escapeHTML(label)}</strong><div class="edit-request-old">الحالي: ${escapeHTML(work[key] ?? '—')}</div><div class="edit-request-new">المقترح: ${escapeHTML(proposed[key] ?? '—')}</div></div>`).join('') : '<p>لا توجد اختلافات ظاهرة في الحقول النصية.</p>'}</div>
+        <div class="admin-review-actions"><button class="admin-status-btn approve" data-edit-request-accept="${escapeHTML(request.id)}" type="button">قبول التعديل</button><button class="admin-status-btn revise" data-edit-request-reject="${escapeHTML(request.id)}" type="button">رفض التعديل</button></div></article>`;
+    }).join('') : '<div class="empty">لا توجد طلبات تعديل بانتظار المراجعة.</div>';
+    manager.innerHTML = `<h3>طلبات تعديل المنجزات</h3><p>المنجز الأصلي يبقى كما هو إلى أن تقبلي التعديل.</p><div class="admin-manager-list">${requestCards}</div>
+      <h3 style="margin-top:28px">إدارة حالات المنجزات</h3><div class="admin-manager-list">${state.works.slice(0,10).map(work => `
+        <div class="admin-manager-item"><h4>${escapeHTML(work.title || 'بدون عنوان')}</h4><small>${escapeHTML(work.submitter_name || '')}</small>
+        <div class="admin-review-actions"><button class="admin-status-btn approve" data-status-id="${escapeHTML(work.id)}" data-status-value="published" type="button">اعتماد</button><button class="admin-status-btn revise" data-status-id="${escapeHTML(work.id)}" data-status-value="needs_edit" type="button">إعادة للتعديل</button></div>
+        <button class="admin-delete-btn" data-admin-delete-id="${escapeHTML(work.id)}" type="button">حذف</button></div>`).join('')}</div>`;
+    manager.querySelectorAll('[data-edit-request-accept]').forEach(button => button.addEventListener('click', async () => { button.disabled = true; await reviewAchievementEditRequest(button.dataset.editRequestAccept, true); }));
+    manager.querySelectorAll('[data-edit-request-reject]').forEach(button => button.addEventListener('click', async () => { button.disabled = true; await reviewAchievementEditRequest(button.dataset.editRequestReject, false); }));
+    manager.querySelectorAll('[data-status-id]').forEach(button => button.addEventListener('click', async () => {
+      button.disabled = true;
+      const { error } = await supabase.from('achievements').update({ status: button.dataset.statusValue }).eq('id', button.dataset.statusId);
+      if (error) { console.error(error); alert('تعذر تحديث الحالة. تأكدي من صلاحيات Supabase.'); button.disabled = false; return; }
+      await loadWorks();
+    }));
+    manager.querySelectorAll('[data-admin-delete-id]').forEach(button => button.addEventListener('click', async () => {
+      if (!confirm('هل أنتِ متأكدة من حذف هذا المنجز؟')) return;
+      const { error } = await supabase.from('achievements').delete().eq('id', button.dataset.adminDeleteId);
+      if (error) { alert(error.message || 'تعذر الحذف.'); return; }
+      await loadWorks();
+    }));
   }
 
   /* =========================

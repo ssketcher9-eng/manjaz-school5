@@ -6,7 +6,7 @@
 
   <title>تفاصيل المنجز | بوابة المنجزات</title>
 
-  <link rel="stylesheet" href="style.css?v=20261014-4">
+  <link rel="stylesheet" href="style.css?v=20261019-edit-requests">
 
   <style>
     .work-page {
@@ -413,8 +413,10 @@
           <div class="work-loading">جاري تحميل المنجز...</div>
         </div>
         <footer class="work-details-footer">
-          <div class="work-admin-actions" id="workAdminActions" hidden>
+          <div class="work-admin-actions" id="workOwnerActions" hidden>
             <button type="button" class="work-btn work-btn-edit" id="editWorkButton">تعديل</button>
+          </div>
+          <div class="work-admin-actions" id="workAdminActions" hidden>
             <button type="button" class="work-btn work-btn-delete" id="deleteWorkButton">حذف</button>
           </div>
           <div class="work-navigation-actions">
@@ -473,13 +475,30 @@
         window.location.href = 'index.html#home';
       }
     });
-    const adminMode = params.get('admin') === '1';
+    const ownerActions = document.querySelector('#workOwnerActions');
     const adminActions = document.querySelector('#workAdminActions');
-    if (adminActions && adminMode) adminActions.hidden = false;
+    let currentWork = null;
+    let currentUserId = null;
+    let currentRole = 'guest';
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        currentUserId = session?.user?.id || null;
+        if (currentUserId) {
+          const { data: profile } = await supabase.from('profiles').select('role').eq('id', currentUserId).maybeSingle();
+          currentRole = profile?.role || 'member';
+        }
+        if (ownerActions && currentWork && currentUserId && String(currentWork.created_by || '') === String(currentUserId)) ownerActions.hidden = false;
+        if (adminActions && currentRole === 'admin') adminActions.hidden = false;
+      } catch (authError) { console.warn('تعذر التحقق من صلاحيات تفاصيل المنجز:', authError); }
+    })();
     document.querySelector('#editWorkButton')?.addEventListener('click', () => {
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'MANJAZ_EDIT_WORK', workId }, window.location.origin);
+      if (!currentWork || !currentUserId || String(currentWork.created_by || '') !== String(currentUserId)) {
+        alert('يمكنك اقتراح تعديل منجزك فقط بعد تسجيل الدخول.');
+        return;
       }
+      if (window.parent !== window) window.parent.postMessage({ type: 'MANJAZ_EDIT_WORK', requestMode: 'proposal', workId }, window.location.origin);
+      else alert('افتحي تفاصيل المنجز من داخل بوابة منجز لإرسال اقتراح التعديل.');
     });
     document.querySelector('#deleteWorkButton')?.addEventListener('click', async () => {
       if (!adminMode || !workId || !confirm('تأكيد حذف هذا المنجز؟')) return;
@@ -528,6 +547,9 @@
         return;
       }
 
+      currentWork = data;
+      if (ownerActions && currentUserId && String(data.created_by || '') === String(currentUserId)) ownerActions.hidden = false;
+      if (adminActions && currentRole === 'admin') adminActions.hidden = false;
       document.title =
         `${data.title || 'تفاصيل المنجز'} | بوابة المنجزات`;
 
