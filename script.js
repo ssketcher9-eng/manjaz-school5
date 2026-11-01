@@ -311,6 +311,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     'نواتج تعلم': 'reports',
     'قيم': 'identity',
     'أولياء الأمور': 'family',
+    'وعي فكري': 'intellectual-awareness',
     'ورش': 'workshops',
     'ورشة تدريبية': 'workshops'
   };
@@ -350,7 +351,8 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     ['نتائج التعلم نحو التميز والإتقان', '◔', '#reports', '#reports', 'إضافة', null, 'نواتج تعلم'],
     ['رعاية وتوجيه طلابي متميز', '♧', '#guidance', '#guidance', 'إضافة', null, 'توجيه طلابي'],
     ['هوية وطنية راسخة', '◇', '#identity', '#identity', 'إضافة', null, 'قيم'],
-    ['تواصل أسري فعال', '◎', '#family', '#family', 'إضافة', null, 'أولياء الأمور']
+    ['تواصل أسري فعال', '◎', '#family', '#family', 'إضافة', null, 'أولياء الأمور'],
+    ['الوعي الفكري', '✧', '#intellectual-awareness', '#intellectual-awareness', 'إضافة شاهد', null, 'وعي فكري']
   ];
 
   const homeSections = $('#homeSections');
