@@ -1331,7 +1331,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     if (!form) return;
     form.reset();
     const media = $('#mediaInputs');
-    if (media) media.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات جديدة اختيارية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
+    if (media) media.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="application/pdf" multiple aria-label="مرفقات PDF جديدة اختيارية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
     $('#title').value = work.title || '';
     $('#category').value = work.category || '';
     $('#date').value = work.achievement_date || '';
@@ -1376,7 +1376,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
     if (!mediaInputs) return;
     const row = document.createElement('div');
     row.className = 'media-input-row';
-    row.innerHTML = '<input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button>';
+    row.innerHTML = '<input class="achievement-media-input" type="file" accept="application/pdf" multiple aria-label="مرفقات PDF إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button>';
     mediaInputs.appendChild(row);
   });
   mediaInputs?.addEventListener('click', event => {
@@ -1404,11 +1404,11 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
       if (!isEditProposal && !coverFile) { alert('صورة غلاف المنجز إلزامية. اختاري صورة قبل الحفظ.'); $('#coverImage')?.focus(); return; }
       if (isEditProposal && (!state.user?.id || state.role === 'guest')) { alert('سجلي الدخول أولًا لإرسال طلب تعديل.'); return; }
       const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      const mediaTypes = [...imageTypes, 'application/pdf', 'video/mp4', 'video/webm', 'video/quicktime'];
+      const mediaTypes = ['application/pdf'];
       if (coverFile && !imageTypes.includes(coverFile.type)) { alert('صورة الغلاف يجب أن تكون بصيغة JPG أو PNG أو WEBP فقط.'); return; }
       if (coverFile && coverFile.size > 10 * 1024 * 1024) { alert('حجم صورة الغلاف أكبر من 10 MB.'); return; }
       for (const file of files) {
-        if (!mediaTypes.includes(file.type)) { alert('نوع الملف غير مسموح: ' + file.name); return; }
+        if (file.type !== 'application/pdf' || !file.name.toLowerCase().endsWith('.pdf')) { alert('المرفقات الإضافية تقبل ملفات PDF فقط: ' + file.name); return; }
         if (file.size > 10 * 1024 * 1024) { alert('حجم الملف أكبر من 10 MB: ' + file.name); return; }
       }
       const form = $('#achievementForm');
@@ -1422,7 +1422,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
           const { error } = await supabase.from('achievement_edit_requests').insert({ achievement_id: editingAchievementId, requested_by: state.user.id, proposed_data: proposedData, status: 'pending' });
           if (error) throw error;
           form.reset();
-          if (mediaInputs) mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات جديدة اختيارية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
+          if (mediaInputs) mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="application/pdf" multiple aria-label="مرفقات PDF جديدة اختيارية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
           setAchievementFormMode(null); editingAchievementId = null; editingAchievementCoverUrl = '';
           await loadWorks();
           alert('تم إرسال اقتراح التعديل إلى الإدارة. سيبقى المنجز الأصلي كما هو حتى قبول الطلب.');
@@ -1445,7 +1445,7 @@ const SUPABASE_URL = 'https://jwsvfrqjmklanrcwviyr.supabase.co';const SUPABASE_P
         await uploadAndRegister(coverFile, true, 1, files.length);
         for (let i = 0; i < files.length; i++) await uploadAndRegister(files[i], false, i + 1, files.length);
         form.reset();
-        if (mediaInputs) mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime" multiple aria-label="مرفقات إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
+        if (mediaInputs) mediaInputs.innerHTML = '<div class="media-input-row"><input class="achievement-media-input" type="file" accept="application/pdf" multiple aria-label="مرفقات PDF إضافية"><button class="secondary remove-media-button" type="button">حذف هذه المجموعة</button></div>';
         $('#achievementSection').value = 'works'; state.targetSection = 'works'; setAchievementFormMode(null);
         await loadWorks(); goToPage(sectionId);
         alert('تم حفظ المنجز وصورة غلافه والوسائط الإضافية بنجاح، وهو الآن قيد المراجعة.');
